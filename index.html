@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>まなびタウン</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ======== タイトル画面 ======== -->
+<div id="screen-title" class="screen active">
+  <div class="title-inner">
+    <div class="title-logo">
+      <span class="logo-emoji">🏘️</span>
+      <h1>まなびタウン</h1>
+      <p class="subtitle">べんきょうして まちを にぎやかに しよう！</p>
+    </div>
+    <button id="btn-start" class="big-btn">はじめる</button>
+    <button id="btn-reset" class="small-btn danger hidden">さいしょから やりなおす</button>
+  </div>
+</div>
+
+<!-- ======== キャラつくり画面 ======== -->
+<div id="screen-maker" class="screen">
+  <h2 class="screen-title">じぶんの キャラを つくろう！</h2>
+  <div class="maker-wrap">
+    <div class="maker-preview">
+      <div id="maker-avatar"></div>
+    </div>
+    <div class="maker-controls" id="maker-controls"></div>
+  </div>
+  <div class="maker-name">
+    <label for="input-name">なまえ：</label>
+    <input id="input-name" type="text" maxlength="8" placeholder="なまえを いれてね">
+  </div>
+  <button id="btn-maker-done" class="big-btn">これで けってい！</button>
+</div>
+
+<!-- ======== ホーム（へや）画面 ======== -->
+<div id="screen-home" class="screen">
+  <div class="statusbar">
+    <span id="status-name" class="status-name"></span>
+    <span class="status-coin">🪙 <span id="status-coins">0</span></span>
+    <span class="status-star">⭐ <span id="status-stars">0</span></span>
+  </div>
+  <div class="room" id="room">
+    <div class="room-wall"></div>
+    <div class="room-floor"></div>
+    <div class="room-window">🌤️</div>
+    <div id="room-items" class="room-items"></div>
+    <div id="home-avatar" class="home-avatar" title="タップしてみてね"></div>
+    <div id="home-bubble" class="speech-bubble hidden"></div>
+  </div>
+</div>
+
+<!-- ======== べんきょうマップ画面 ======== -->
+<div id="screen-map" class="screen">
+  <div class="statusbar">
+    <span class="status-title">📚 べんきょうマップ</span>
+    <span class="status-coin">🪙 <span id="map-coins">0</span></span>
+  </div>
+  <div id="map-list" class="map-list"></div>
+</div>
+
+<!-- ======== クイズ画面 ======== -->
+<div id="screen-quiz" class="screen">
+  <div class="quiz-top">
+    <button id="btn-quiz-quit" class="small-btn">← やめる</button>
+    <div id="quiz-progress" class="quiz-progress"></div>
+  </div>
+  <div class="quiz-card">
+    <button id="btn-speak" class="speak-btn" title="よみあげ">🔊</button>
+    <div id="quiz-question" class="quiz-question"></div>
+    <div id="quiz-visual" class="quiz-visual"></div>
+  </div>
+  <div id="quiz-choices" class="quiz-choices"></div>
+  <div id="quiz-feedback" class="quiz-feedback hidden"></div>
+</div>
+
+<!-- ======== けっか画面 ======== -->
+<div id="screen-result" class="screen">
+  <div class="result-card">
+    <div id="result-emoji" class="result-emoji"></div>
+    <h2 id="result-title"></h2>
+    <div id="result-stars" class="result-stars"></div>
+    <div id="result-detail" class="result-detail"></div>
+    <div id="result-reward" class="result-reward"></div>
+    <div id="result-unlock" class="result-unlock"></div>
+    <button id="btn-result-ok" class="big-btn">オッケー！</button>
+  </div>
+</div>
+
+<!-- ======== おみせ画面 ======== -->
+<div id="screen-shop" class="screen">
+  <div class="statusbar">
+    <span class="status-title">🛍️ おみせ</span>
+    <span class="status-coin">🪙 <span id="shop-coins">0</span></span>
+  </div>
+  <div id="shop-tabs" class="tabs"></div>
+  <div id="shop-list" class="shop-list"></div>
+</div>
+
+<!-- ======== きせかえ画面 ======== -->
+<div id="screen-closet" class="screen">
+  <div class="statusbar"><span class="status-title">👕 きせかえ</span></div>
+  <div class="closet-wrap">
+    <div class="closet-preview"><div id="closet-avatar"></div></div>
+    <div id="closet-list" class="closet-list"></div>
+  </div>
+</div>
+
+<!-- ======== まち画面 ======== -->
+<div id="screen-town" class="screen">
+  <div class="statusbar"><span class="status-title">🏘️ まち</span></div>
+  <div class="town" id="town">
+    <div class="town-sky"><div class="town-sun">☀️</div><div class="cloud c1">☁️</div><div class="cloud c2">☁️</div></div>
+    <div class="town-ground"></div>
+    <div id="town-residents" class="town-residents"></div>
+  </div>
+  <div id="town-bubble" class="speech-bubble town-speech hidden"></div>
+  <p class="town-hint" id="town-hint"></p>
+</div>
+
+<!-- ======== ナビゲーション ======== -->
+<nav id="navbar" class="navbar hidden">
+  <button data-screen="home"><span>🏠</span>ホーム</button>
+  <button data-screen="map"><span>📚</span>べんきょう</button>
+  <button data-screen="shop"><span>🛍️</span>おみせ</button>
+  <button data-screen="closet"><span>👕</span>きせかえ</button>
+  <button data-screen="town"><span>🏘️</span>まち</button>
+</nav>
+
+<div id="confetti-layer"></div>
+
+<script src="js/data.js"></script>
+<script src="js/avatar.js"></script>
+<script src="js/questions.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
