@@ -1,4 +1,4 @@
-/* ================= まなびタウン スタイル ================= */
+/* ================= おべんきょコレクション スタイル ================= */
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 :root {
@@ -31,14 +31,11 @@ body {
   display: none;
   position: absolute;
   inset: 0;
-  bottom: 76px;
   overflow-y: auto;
   padding: 12px;
 }
 .screen.active { display: block; }
-#screen-title.active, #screen-maker.active, #screen-quiz.active, #screen-result.active {
-  bottom: 0;
-}
+#screen-town { padding: 0; overflow: hidden; }
 
 .screen-title { text-align: center; margin: 10px 0 16px; font-size: 1.4rem; }
 
@@ -49,9 +46,7 @@ body {
   margin-bottom: 12px; font-size: 1.05rem;
   position: sticky; top: 0; z-index: 5;
 }
-.status-name { font-size: 1.1rem; }
-.status-coin, .status-star { margin-left: auto; }
-.status-coin + .status-star { margin-left: 0; }
+.status-coin { margin-left: auto; }
 .status-title { font-size: 1.15rem; }
 
 /* ---------- ボタン ---------- */
@@ -67,7 +62,7 @@ body {
 .small-btn {
   padding: 8px 18px; font-family: inherit; font-weight: 700; font-size: 1rem;
   color: var(--text); background: #fff; border: 2px solid #e0d5c5;
-  border-radius: 999px; cursor: pointer;
+  border-radius: 999px; cursor: pointer; white-space: nowrap;
 }
 .small-btn.danger { color: #d32f2f; border-color: #ef9a9a; }
 
@@ -82,27 +77,30 @@ body {
 .logo-emoji { font-size: 5rem; display: block; text-align: center; animation: bob 2s ease-in-out infinite; }
 @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
 .title-logo h1 {
-  font-size: 3rem; font-weight: 900; text-align: center;
+  font-size: 2.8rem; font-weight: 900; text-align: center;
   color: #ff7043; text-shadow: 3px 3px 0 #fff;
-  letter-spacing: .1em;
+  letter-spacing: .06em; line-height: 1.25;
 }
 .subtitle { text-align: center; margin-top: 8px; font-size: 1.05rem; }
 
 /* ---------- キャラつくり ---------- */
-.maker-wrap { display: flex; gap: 14px; max-width: 760px; margin: 0 auto; flex-wrap: wrap; justify-content: center; }
+.maker-wrap { display: flex; gap: 14px; max-width: 780px; margin: 0 auto; flex-wrap: wrap; justify-content: center; }
 .maker-preview {
   background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
-  padding: 12px; width: 220px; display: flex; align-items: center; justify-content: center;
+  padding: 12px; width: 220px; height: fit-content;
+  display: flex; align-items: center; justify-content: center;
+  position: sticky; top: 8px;
 }
 .maker-preview svg { width: 180px; height: auto; }
-.maker-controls { flex: 1; min-width: 280px; max-width: 420px; }
+.maker-controls { flex: 1; min-width: 280px; max-width: 440px; }
 .maker-row { background: var(--card); border-radius: 14px; padding: 8px 12px; margin-bottom: 8px; box-shadow: var(--shadow); }
 .maker-row-label { font-size: .95rem; margin-bottom: 6px; }
 .maker-opts { display: flex; gap: 8px; flex-wrap: wrap; }
 .maker-opt {
   min-width: 44px; height: 44px; border-radius: 12px; border: 3px solid #eee;
-  background: #fafafa; cursor: pointer; font-size: 1.2rem; font-family: inherit;
-  display: flex; align-items: center; justify-content: center; padding: 0 8px;
+  background: #fafafa; cursor: pointer; font-size: 1rem; font-family: inherit;
+  display: flex; align-items: center; justify-content: center; padding: 0 10px;
+  color: var(--text); font-weight: 700;
 }
 .maker-opt.selected { border-color: var(--primary); background: #fff0f5; }
 .maker-opt.color-opt { min-width: 40px; width: 40px; height: 40px; border-radius: 50%; }
@@ -113,10 +111,133 @@ body {
   width: 240px; text-align: center; outline: none; background: #fff;
 }
 
-/* ---------- へや ---------- */
+/* ================= まち（メイン画面） ================= */
+.town-view {
+  position: absolute; inset: 0; overflow: hidden;
+  background: linear-gradient(180deg, #7ecbfa 0%, #b3e5fc 45%, #e1f5fe 70%);
+  touch-action: manipulation;
+}
+.town-sky { position: absolute; inset: 0; pointer-events: none; }
+.town-sun { position: absolute; top: 16px; right: 24px; font-size: 3.4rem; animation: bob 4s ease-in-out infinite; }
+.town-rainbow { position: absolute; top: 6px; left: 30px; font-size: 4.5rem; }
+.cloud { position: absolute; font-size: 2.6rem; opacity: .95; animation: drift linear infinite; }
+.cloud.c1 { top: 8%; animation-duration: 42s; }
+.cloud.c2 { top: 20%; animation-duration: 30s; animation-delay: -14s; }
+.cloud.c3 { top: 4%; animation-duration: 56s; animation-delay: -30s; font-size: 2rem; }
+@keyframes drift { from { left: -12%; } to { left: 105%; } }
+
+.town-world {
+  position: absolute; top: 0; bottom: 0; left: 0;
+  will-change: transform;
+}
+/* しばふ と みち */
+.town-world::before {
+  content: ""; position: absolute; left: -200px; right: -200px; bottom: 64px; height: 90px;
+  background: linear-gradient(180deg, #aed581, #8bc34a);
+  border-top: 6px solid #c5e1a5;
+}
+.town-world::after {
+  content: ""; position: absolute; left: -200px; right: -200px; bottom: 0; height: 70px;
+  background: linear-gradient(180deg, #e0c9a6, #d7b98e);
+}
+
+.town-hills { position: absolute; inset: 0; pointer-events: none; will-change: transform; }
+.hill {
+  position: absolute; bottom: 140px; width: 560px; height: 190px;
+  background: linear-gradient(180deg, #c5e8b0, #a5d6a7);
+  border-radius: 50% 50% 0 0;
+}
+.bg-tree { position: absolute; bottom: 150px; font-size: 3.4rem; }
+
+.town-deco { position: absolute; inset: 0; pointer-events: none; }
+.road-deco { position: absolute; bottom: 66px; font-size: 1.5rem; }
+
+.town-building {
+  position: absolute; bottom: 128px; cursor: pointer;
+  filter: drop-shadow(0 8px 6px rgba(0,0,0,.15));
+  transition: transform .15s;
+}
+.town-building:hover { transform: translateY(-4px); }
+.town-building.empty-lot { cursor: default; filter: none; }
+.town-building.park { cursor: default; }
+
+/* ---------- プレイヤーとNPC ---------- */
+.town-player, .town-npc {
+  position: absolute; bottom: 8px; transform: translateX(-50%);
+  text-align: center; z-index: 10;
+}
+.town-npc { bottom: 14px; cursor: pointer; z-index: 8; }
+.town-player .npc-avatar svg { width: 110px; height: auto; }
+.town-npc .npc-avatar svg { width: 86px; height: auto; }
+.npc-avatar { filter: drop-shadow(0 5px 4px rgba(0,0,0,.2)); }
+.face-left .npc-avatar { transform: scaleX(-1); }
+.pet-emoji { font-size: 2.8rem; display: block; filter: drop-shadow(0 4px 3px rgba(0,0,0,.2)); }
+.face-left .pet-emoji { transform: scaleX(-1); display: block; }
+.npc-name {
+  font-size: .8rem; background: rgba(255,255,255,.9); border-radius: 999px;
+  padding: 1px 10px; display: inline-block; margin-top: 2px;
+  box-shadow: 0 2px 3px rgba(0,0,0,.12);
+}
+.player-name { background: #fff0f5; border: 2px solid var(--primary); }
+
+/* あるく アニメーション */
+svg .av-leg, svg .av-arm { transform-box: fill-box; transform-origin: 50% 10%; }
+.walking svg { animation: walk-bounce .38s ease-in-out infinite; }
+@keyframes walk-bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+.face-left.walking .npc-avatar svg,
+.walking.face-left svg { animation: walk-bounce .38s ease-in-out infinite; }
+.walking svg .av-leg-l { animation: step-a .38s ease-in-out infinite; }
+.walking svg .av-leg-r { animation: step-b .38s ease-in-out infinite; }
+.walking svg .av-arm-l { animation: step-b .38s ease-in-out infinite; }
+.walking svg .av-arm-r { animation: step-a .38s ease-in-out infinite; }
+@keyframes step-a { 0%,100% { transform: rotate(14deg); } 50% { transform: rotate(-14deg); } }
+@keyframes step-b { 0%,100% { transform: rotate(-14deg); } 50% { transform: rotate(14deg); } }
+
+/* ふきだし */
+.npc-bubble {
+  position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+  background: #fff; border-radius: 14px; padding: 8px 14px;
+  font-size: .95rem; width: max-content; max-width: 240px;
+  box-shadow: var(--shadow); z-index: 30; animation: pop .25s;
+}
+.npc-bubble::after {
+  content: ""; position: absolute; bottom: -9px; left: 50%; transform: translateX(-50%);
+  border: 9px solid transparent; border-top-color: #fff; border-bottom: none;
+}
+
+/* ---------- HUD・そうさ ---------- */
+.town-hud {
+  position: absolute; top: 10px; left: 10px; z-index: 40;
+  display: flex; gap: 14px; align-items: center;
+  background: rgba(255,255,255,.92); border-radius: 999px;
+  padding: 8px 18px; box-shadow: var(--shadow); font-size: 1.05rem;
+}
+.enter-btn {
+  position: absolute; bottom: 190px; left: 50%; transform: translateX(-50%);
+  z-index: 40; padding: 14px 28px;
+  font-family: inherit; font-weight: 900; font-size: 1.15rem; color: #fff;
+  background: var(--green); border: none; border-radius: 999px;
+  box-shadow: 0 5px 0 #558b2f; cursor: pointer;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.06); } }
+.walk-controls {
+  position: absolute; bottom: 14px; left: 0; right: 0; z-index: 40;
+  display: flex; justify-content: space-between; padding: 0 18px;
+  pointer-events: none;
+}
+.walk-btn {
+  pointer-events: auto; width: 76px; height: 76px; border-radius: 50%;
+  border: none; background: rgba(255,255,255,.92); color: var(--text);
+  font-size: 2rem; font-weight: 900; cursor: pointer;
+  box-shadow: 0 5px 0 rgba(0,0,0,.18); touch-action: none;
+}
+.walk-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,.18); }
+
+/* ---------- へや（じぶんのいえ・トモダチのいえ） ---------- */
 .room {
   position: relative; max-width: 640px; margin: 0 auto;
-  height: min(70vh, 520px); border-radius: var(--radius); overflow: hidden;
+  height: min(62vh, 470px); border-radius: var(--radius); overflow: hidden;
   box-shadow: var(--shadow);
 }
 .room-wall { position: absolute; inset: 0; height: 62%; background: linear-gradient(180deg,#ffe9c7,#ffe0b2); }
@@ -143,7 +264,7 @@ body {
   border: 10px solid transparent; border-top-color: #fff; border-bottom: none;
 }
 
-/* ---------- べんきょうマップ ---------- */
+/* ---------- がっこう（べんきょうマップ） ---------- */
 .map-list { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; padding-bottom: 20px; }
 .map-chapter { text-align: center; font-size: 1.05rem; color: #8d6e63; margin-top: 10px; }
 .level-btn {
@@ -165,10 +286,9 @@ body {
 .level-btn.locked .lv-num { background: #bdbdbd; }
 .level-btn .lv-info { flex: 1; }
 .level-btn .lv-stars { font-size: .95rem; color: #f9a825; }
-.level-btn .lv-cats { font-size: .85rem; color: #8d6e63; }
 
-/* ---------- クイズ ---------- */
-#screen-quiz { background: linear-gradient(180deg,#e3f6ff,#fdf6e3); display: none; }
+/* ---------- クイズ（3たく） ---------- */
+#screen-quiz { background: linear-gradient(180deg,#e3f6ff,#fdf6e3); }
 #screen-quiz.active { display: flex; flex-direction: column; }
 .quiz-top { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
 .quiz-progress { flex: 1; text-align: center; font-size: 1.2rem; letter-spacing: .2em; }
@@ -212,6 +332,47 @@ body {
 }
 @keyframes pop { from { transform: scale(.3); } to { transform: scale(1); } }
 
+/* ---------- タイピングどうじょう ---------- */
+#screen-dojo { background: linear-gradient(180deg,#e8f5e9,#fdf6e3); }
+.dojo-desc { text-align: center; margin: 4px 0 14px; color: #8d6e63; font-size: .98rem; }
+.dojo-list {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  gap: 10px; max-width: 560px; margin: 0 auto; padding-bottom: 20px;
+}
+.dojo-level {
+  position: relative; aspect-ratio: 1; border-radius: 18px; border: none;
+  background: var(--card); box-shadow: var(--shadow); cursor: pointer;
+  font-family: inherit; font-weight: 900; color: var(--text);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.dojo-level .dl-num { font-size: 1.5rem; }
+.dojo-level .dl-mark { font-size: .95rem; min-height: 1.2em; }
+.dojo-level.cleared { background: #f1f8e9; }
+.dojo-level.locked { opacity: .45; cursor: default; }
+
+#screen-typing-quiz { background: linear-gradient(180deg,#e8f5e9,#fdf6e3); }
+#screen-typing-quiz.active { display: flex; flex-direction: column; }
+.tq-title { font-size: 1.05rem; white-space: nowrap; }
+.typing-card { margin-top: 10px; }
+.tq-guide { font-size: 1.05rem; color: #8d6e63; margin-bottom: 6px; }
+.tq-prompt { font-size: 3.2rem; font-weight: 900; line-height: 1.3; word-break: break-all; }
+.tq-hint { font-size: 1.4rem; color: #4fa3d1; min-height: 1.6em; letter-spacing: .08em; }
+.tq-input {
+  display: block; margin: 12px auto 0; width: min(90%, 420px);
+  font-family: Consolas, "Courier New", monospace; font-size: 1.9rem; font-weight: 700;
+  text-align: center; color: var(--text);
+  padding: 12px 16px; border: 4px solid var(--green); border-radius: 16px;
+  outline: none; background: #fff;
+}
+.tq-input:focus { border-color: #558b2f; }
+.tq-input:disabled { background: #f5f5f5; }
+.tq-btns { display: flex; gap: 12px; justify-content: center; }
+.tq-btn { margin: 14px 0 0; padding: 12px 34px; font-size: 1.15rem; }
+#btn-tq-next { background: var(--green); box-shadow: 0 6px 0 #558b2f; }
+.tq-feedback { text-align: center; font-size: 1.5rem; font-weight: 900; margin-top: 12px; min-height: 1.6em; }
+.tq-feedback.ok { color: #558b2f; animation: pop .3s; }
+.tq-feedback.ng { color: #d32f2f; animation: pop .3s; }
+
 /* ---------- けっか ---------- */
 #screen-result { background: linear-gradient(180deg,#fff8e1,#ffe0f0); }
 #screen-result.active { display: flex; align-items: center; justify-content: center; }
@@ -230,7 +391,7 @@ body {
 .result-unlock:empty { display: none; }
 
 /* ---------- おみせ ---------- */
-.tabs { display: flex; gap: 8px; max-width: 640px; margin: 0 auto 12px; flex-wrap: wrap; }
+.tabs { display: flex; gap: 8px; max-width: 640px; margin: 0 auto 12px; flex-wrap: wrap; justify-content: center; }
 .tab-btn {
   padding: 8px 16px; border-radius: 999px; border: 3px solid #e0d5c5;
   background: #fff; font-family: inherit; font-weight: 700; font-size: 1rem;
@@ -277,45 +438,9 @@ body {
 .closet-item .ci-icon { font-size: 1.8rem; display: block; }
 .closet-item.equipped { border-color: var(--primary); background: #fff0f5; }
 
-/* ---------- まち ---------- */
-.town {
-  position: relative; max-width: 720px; margin: 0 auto;
-  height: min(64vh, 480px); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
-}
-.town-sky { position: absolute; inset: 0; background: linear-gradient(180deg,#81d4fa,#e1f5fe 70%); }
-.town-sun { position: absolute; top: 10px; right: 18px; font-size: 3rem; }
-.cloud { position: absolute; font-size: 2.4rem; opacity: .9; animation: drift 30s linear infinite; }
-.cloud.c1 { top: 12%; animation-duration: 38s; }
-.cloud.c2 { top: 28%; animation-duration: 26s; animation-delay: -12s; }
-@keyframes drift { from { left: -12%; } to { left: 105%; } }
-.town-ground { position: absolute; left: 0; right: 0; bottom: 0; height: 34%;
-  background: linear-gradient(180deg,#aed581,#8bc34a); }
-.town-residents { position: absolute; inset: 0; }
-.town-resident { position: absolute; cursor: pointer; text-align: center; }
-.town-resident svg { width: 84px; height: auto; }
-.town-resident .tr-pet { font-size: 3rem; }
-.town-resident .tr-name {
-  font-size: .8rem; background: rgba(255,255,255,.85); border-radius: 999px;
-  padding: 1px 8px; display: inline-block;
-}
-.town-resident.empty-slot { opacity: .8; font-size: 2rem; cursor: default; }
-.town-resident .tr-lock { font-size: .72rem; background: rgba(255,255,255,.85); border-radius: 8px; padding: 2px 6px; display: block; }
-.town-speech { position: fixed; left: 50%; bottom: 110px; top: auto; z-index: 40; }
+/* ---------- トモダチのいえ ---------- */
+.friend-avatar-pos { left: 38%; }
 .town-hint { text-align: center; margin-top: 10px; font-size: .95rem; color: #8d6e63; }
-
-/* ---------- ナビ ---------- */
-.navbar {
-  position: fixed; left: 0; right: 0; bottom: 0; height: 76px;
-  background: #fff; box-shadow: 0 -3px 10px rgba(0,0,0,.1);
-  display: flex; z-index: 20;
-}
-.navbar button {
-  flex: 1; border: none; background: none; font-family: inherit; font-weight: 700;
-  font-size: .8rem; color: #a1887f; cursor: pointer;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-}
-.navbar button span { font-size: 1.6rem; }
-.navbar button.active { color: var(--primary-dark); }
 
 /* ---------- 紙吹雪 ---------- */
 #confetti-layer { position: fixed; inset: 0; pointer-events: none; z-index: 50; overflow: hidden; }
@@ -331,5 +456,9 @@ body {
   .quiz-question { font-size: 1.25rem; }
   .quiz-visual { font-size: 2rem; }
   .choice-btn { font-size: 1.35rem; padding: 14px 8px; }
-  .title-logo h1 { font-size: 2.3rem; }
+  .title-logo h1 { font-size: 2rem; }
+  .tq-prompt { font-size: 2.4rem; }
+  .town-player .npc-avatar svg { width: 92px; }
+  .town-npc .npc-avatar svg { width: 72px; }
+  .walk-btn { width: 66px; height: 66px; }
 }

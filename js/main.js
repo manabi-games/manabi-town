@@ -1,17 +1,20 @@
-/* ================= まなびタウン メインロジック ================= */
+/* ================= おべんきょコレクション メインロジック ================= */
 
 const SAVE_KEY = "manabi-town-save-v1";
 
 // ---------- セーブデータ ----------
 let state = null;
+let currentFriend = null;        // いま あそびにいっている トモダチ
+let resultReturnScreen = "map";  // けっかがめんの あとに もどる がめん
 
 function defaultState() {
   return {
     name: "",
-    avatar: { skin: 0, hairStyle: "short", hairColor: 0, eyes: "round", shirt: SHIRT_COLORS_FREE[0], hat: null, glasses: null, item: null },
+    avatar: { skin: 0, hairStyle: "short", hairColor: 0, eyes: "round", mouth: "smile", shirt: SHIRT_COLORS_FREE[0], hat: null, glasses: null, item: null },
     coins: 0,
-    cleared: {},          // { "1": stars, ... }
-    owned: [],            // アイテムID
+    cleared: {},                 // がっこう { "1": stars, ... }
+    typing: { roma: 1, math: 1 }, // タイピング いまひらいている さいだいレベル
+    owned: [],                   // かった アイテムID
   };
 }
 function save() { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); }
@@ -20,13 +23,17 @@ function load() {
     const raw = localStorage.getItem(SAVE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (parsed && parsed.name && parsed.avatar && typeof parsed.avatar === "object") return parsed;
+      if (parsed && parsed.name && parsed.avatar && typeof parsed.avatar === "object") {
+        // ふるいセーブデータへの こうもく ついか（v1 → v2）
+        if (!parsed.typing) parsed.typing = { roma: 1, math: 1 };
+        if (!parsed.avatar.mouth) parsed.avatar.mouth = "smile";
+        return parsed;
+      }
     }
   } catch (e) { /* こわれたデータは むし */ }
   return null;
 }
 
-// いちばん すすんでいる クリアずみレベル
 function maxCleared() {
   return Object.keys(state.cleared).reduce((m, k) => Math.max(m, Number(k)), 0);
 }
@@ -71,27 +78,32 @@ const $ = (id) => document.getElementById(id);
 function showScreen(name) {
   document.querySelectorAll(".screen").forEach((s) => s.classList.remove("active"));
   $("screen-" + name).classList.add("active");
-  const nav = $("navbar");
-  const withNav = ["home", "map", "shop", "closet", "town"];
-  nav.classList.toggle("hidden", !withNav.includes(name));
-  nav.querySelectorAll("button").forEach((b) =>
-    b.classList.toggle("active", b.dataset.screen === name));
+  if (name !== "town") stopTownLoop();
   // 画面ごとの描画
+  if (name === "town") renderTownScreen();
   if (name === "home") renderHome();
   if (name === "map") renderMap();
   if (name === "shop") renderShop();
   if (name === "closet") renderCloset();
-  if (name === "town") renderTown();
+  if (name === "dojo") renderDojo();
+  if (name === "friend") renderFriendRoom();
 }
 
-document.querySelectorAll("#navbar button").forEach((b) => {
-  b.addEventListener("click", () => showScreen(b.dataset.screen));
+function updateHud() {
+  $("hud-name").textContent = state.name;
+  $("hud-coins").textContent = state.coins;
+  $("hud-stars").textContent = totalStars();
+}
+
+// 「そとにでる」ボタン ぜんぶ
+document.querySelectorAll(".btn-exit").forEach((b) => {
+  b.addEventListener("click", () => { playDoorSound(); showScreen("town"); });
 });
 
 // ---------- タイトル ----------
 $("btn-start").addEventListener("click", () => {
   const existing = load();
-  if (existing) { state = existing; showScreen("home"); }
+  if (existing) { state = existing; showScreen("town"); }
   else startMaker();
 });
 $("btn-reset").addEventListener("click", () => {
@@ -110,10 +122,10 @@ let makerCfg = null;
 
 const MAKER_ROWS = [
   { key: "skin", label: "はだのいろ", type: "color", values: SKIN_COLORS },
-  { key: "hairStyle", label: "かみがた", type: "opts",
-    values: HAIR_STYLES, labels: ["みじかい", "ツンツン", "ロング", "ツインテール"] },
+  { key: "hairStyle", label: "かみがた", type: "opts", values: HAIR_STYLES, labels: HAIR_LABELS },
   { key: "hairColor", label: "かみのいろ", type: "color", values: HAIR_COLORS },
-  { key: "eyes", label: "め", type: "opts", values: EYE_STYLES, labels: ["まんまる", "にこにこ", "キラキラ"] },
+  { key: "eyes", label: "め", type: "opts", values: EYE_STYLES, labels: EYE_LABELS },
+  { key: "mouth", label: "くち", type: "opts", values: MOUTH_STYLES, labels: MOUTH_LABELS },
   { key: "shirt", label: "ふくのいろ", type: "color", values: SHIRT_COLORS_FREE, raw: true },
 ];
 
@@ -161,24 +173,21 @@ $("btn-maker-done").addEventListener("click", () => {
   state.name = name;
   state.avatar = makerCfg;
   save();
-  speak(`${name}、まなびタウンへ ようこそ！`);
-  showScreen("home");
+  speak(`${name}、おべんきょコレクションの まちへ ようこそ！`);
+  showScreen("town");
 });
 
-// ---------- ホーム ----------
+// ---------- じぶんのいえ ----------
 const HOME_LINES = [
   "きょうも べんきょう がんばろう！",
-  "コインを ためて おかいものしよう🪙",
+  "がっこうと どうじょうで コインを あつめよう🪙",
   "まちに トモダチが ふえるといいな！",
-  "「べんきょう」ボタンから しゅっぱつ！",
+  "タイピング れんしゅうすると かっこいいよ⌨️",
   "きせかえも できるよ👕",
 ];
 function renderHome() {
-  $("status-name").textContent = state.name;
-  $("status-coins").textContent = state.coins;
-  $("status-stars").textContent = totalStars();
+  $("home-coins").textContent = state.coins;
   $("home-avatar").innerHTML = renderAvatar(state.avatar);
-  // へやのかざり
   const itemsBox = $("room-items");
   itemsBox.innerHTML = "";
   SHOP_ITEMS.filter((i) => i.cat === "room" && state.owned.includes(i.id)).forEach((i) => {
@@ -199,8 +208,10 @@ $("home-avatar").addEventListener("click", () => {
   clearTimeout(bubble._t);
   bubble._t = setTimeout(() => bubble.classList.add("hidden"), 3500);
 });
+$("btn-open-closet").addEventListener("click", () => showScreen("closet"));
+$("btn-closet-back").addEventListener("click", () => showScreen("home"));
 
-// ---------- べんきょうマップ ----------
+// ---------- がっこう（べんきょうマップ） ----------
 function renderMap() {
   $("map-coins").textContent = state.coins;
   const list = $("map-list");
@@ -229,7 +240,7 @@ function renderMap() {
   });
 }
 
-// ---------- クイズ ----------
+// ---------- クイズ（がっこう・3たくしき） ----------
 let quiz = null; // { def, questions, index, correct, locked }
 
 function startQuiz(def) {
@@ -316,13 +327,12 @@ function finishQuiz() {
     state.coins += coinsEarned;
     state.cleared[def.lv] = Math.max(state.cleared[def.lv] || 0, stars);
 
-    // あたらしい かいほう を チェック
     const after = maxCleared();
     if (after > before) {
       FRIENDS.filter((f) => f.unlockLv > before && f.unlockLv <= after)
-        .forEach((f) => unlocks.push(`🏠 ${f.name}が まちに ひっこしてきた！`));
+        .forEach((f) => unlocks.push(`🏠 ${f.name}が まちに ひっこしてきた！あいにいこう！`));
       PETS.filter((p) => p.unlockLv > before && p.unlockLv <= after)
-        .forEach((p) => unlocks.push(`${p.icon} ペットの ${p.name}が なかまになった！`));
+        .forEach((p) => unlocks.push(`${p.icon} ペットの ${p.name}が こうえんに やってきた！`));
       const newItems = SHOP_ITEMS.filter((i) => i.unlockLv > before && i.unlockLv <= after);
       if (newItems.length) unlocks.push(`🛍️ おみせに あたらしい しなもの が ${newItems.length}こ ならんだ！`);
     }
@@ -337,6 +347,7 @@ function finishQuiz() {
   $("result-detail").textContent = `${QUESTIONS_PER_LEVEL}もん中 ${correct}もん せいかい！`;
   $("result-reward").textContent = passed ? `🪙 ${coinsEarned}コイン ゲット！` : "3もん いじょう せいかいで クリアだよ";
   $("result-unlock").innerHTML = unlocks.join("<br>");
+  resultReturnScreen = "map";
   showScreen("result");
 
   if (passed) {
@@ -348,7 +359,7 @@ function finishQuiz() {
   }
 }
 
-$("btn-result-ok").addEventListener("click", () => showScreen("map"));
+$("btn-result-ok").addEventListener("click", () => showScreen(resultReturnScreen));
 
 // ---------- おみせ ----------
 let shopTab = "hat";
@@ -378,7 +389,7 @@ function renderShop() {
       <div class="item-name">${item.name}</div>
       ${unlocked
         ? `<button class="buy-btn" ${owned || !canBuy ? "disabled" : ""}>${owned ? "もってる✓" : `🪙${item.price}`}</button>`
-        : `<div class="item-lock">レベル${item.unlockLv}を<br>クリアでとうじょう</div>`}`;
+        : `<div class="item-lock">がっこうレベル${item.unlockLv}を<br>クリアでとうじょう</div>`}`;
     if (canBuy) {
       div.querySelector(".buy-btn").addEventListener("click", () => {
         state.coins -= item.price;
@@ -413,7 +424,6 @@ function renderCloset() {
     const box = document.createElement("div");
     box.className = "closet-items";
 
-    // 「なし」/ きほんのふく
     if (sec.cat === "shirt") {
       SHIRT_COLORS_FREE.forEach((c) => box.appendChild(closetBtn("💙", "きほん", sec.key, c, c)));
     } else {
@@ -438,68 +448,39 @@ function closetBtn(icon, name, key, value, equipVal) {
   return b;
 }
 
-// ---------- まち ----------
-const TOWN_SLOTS = [
-  { left: "8%",  bottom: "18%" }, { left: "26%", bottom: "8%" },
-  { left: "44%", bottom: "20%" }, { left: "62%", bottom: "8%" },
-  { left: "78%", bottom: "18%" }, { left: "36%", bottom: "34%" },
-];
-const PET_SLOTS = [
-  { left: "16%", bottom: "4%" }, { left: "56%", bottom: "30%" },
-  { left: "88%", bottom: "6%" }, { left: "70%", bottom: "32%" },
-  { left: "4%",  bottom: "38%" },
-];
-
-function renderTown() {
-  const box = $("town-residents");
-  box.innerHTML = "";
-  const maxLv = maxCleared();
-  let unlockedCount = 0;
-
-  FRIENDS.forEach((f, i) => {
-    const slot = TOWN_SLOTS[i % TOWN_SLOTS.length];
+// ---------- トモダチのいえ ----------
+const FRIEND_DECO = ["🪟", "🖼️", "🪴", "🛋️", "📚", "🧸"];
+function renderFriendRoom() {
+  const f = currentFriend;
+  if (!f) { showScreen("town"); return; }
+  $("friend-title").textContent = `🏠 ${f.name}のいえ`;
+  $("friend-wall").style.background = `linear-gradient(180deg, ${f.houseColor}33, ${f.houseColor}22)`;
+  $("friend-avatar").innerHTML = renderAvatar(f.avatar);
+  const deco = $("friend-deco");
+  deco.innerHTML = "";
+  const idx = FRIENDS.indexOf(f);
+  [FRIEND_DECO[idx % FRIEND_DECO.length], FRIEND_DECO[(idx + 2) % FRIEND_DECO.length], "🪑"].forEach((e, i) => {
     const d = document.createElement("div");
-    d.className = "town-resident";
-    d.style.left = slot.left;
-    d.style.bottom = slot.bottom;
-    if (f.unlockLv <= maxLv) {
-      unlockedCount++;
-      const av = { skin: f.avatar.skin, hairStyle: f.avatar.hairStyle, hairColor: f.avatar.hairColor, eyes: f.avatar.eyes, shirt: f.avatar.shirt };
-      d.innerHTML = renderAvatar(av) + `<span class="tr-name">${f.name}</span>`;
-      d.addEventListener("click", () => townSpeak(`${f.name}「${pick(f.lines)}」`));
-    } else {
-      d.className += " empty-slot";
-      d.innerHTML = `🏡<span class="tr-lock">レベル${f.unlockLv}で<br>ひっこしてくる</span>`;
-    }
-    box.appendChild(d);
+    d.className = "room-item";
+    d.textContent = e;
+    d.style.left = ["10%", "72%", "44%"][i];
+    d.style.bottom = ["10%", "28%", "6%"][i];
+    deco.appendChild(d);
   });
-
-  PETS.forEach((p, i) => {
-    if (p.unlockLv > maxLv) return;
-    unlockedCount++;
-    const slot = PET_SLOTS[i % PET_SLOTS.length];
-    const d = document.createElement("div");
-    d.className = "town-resident";
-    d.style.left = slot.left;
-    d.style.bottom = slot.bottom;
-    d.innerHTML = `<span class="tr-pet">${p.icon}</span><span class="tr-name">${p.name}</span>`;
-    d.addEventListener("click", () => townSpeak(`${p.name}「${pick(p.lines)}」`));
-    box.appendChild(d);
-  });
-
-  $("town-hint").textContent = unlockedCount === 0
-    ? "べんきょうを すすめると トモダチや ペットが やってくるよ！"
-    : `いま まちには ${unlockedCount}にん（ひき）の なかまが いるよ！ タップして はなしかけてみよう`;
+  // はいったら あいさつ
+  setTimeout(() => friendSay(pick(f.lines)), 400);
 }
-
-function townSpeak(text) {
-  const bubble = $("town-bubble");
-  bubble.textContent = text;
+function friendSay(line) {
+  const bubble = $("friend-bubble");
+  bubble.textContent = line;
   bubble.classList.remove("hidden");
-  speak(text.replace(/[「」]/g, "、"));
+  speak(line);
   clearTimeout(bubble._t);
-  bubble._t = setTimeout(() => bubble.classList.add("hidden"), 3500);
+  bubble._t = setTimeout(() => bubble.classList.add("hidden"), 3800);
 }
+$("friend-avatar").addEventListener("click", () => {
+  if (currentFriend) friendSay(pick(currentFriend.lines));
+});
 
 // ---------- 紙吹雪 ----------
 const CONFETTI_GLYPHS = ["🎉", "⭐", "🌸", "💛", "🎈", "✨"];
@@ -516,3 +497,6 @@ function launchConfetti(n) {
     setTimeout(() => d.remove(), 5000);
   }
 }
+
+// ---------- タイピングどうじょう そうさ とうろく ----------
+setupTypingControls();
