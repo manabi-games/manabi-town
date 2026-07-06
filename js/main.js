@@ -71,10 +71,28 @@ const soundCorrect = () => beep([660, 880], 0.12);
 const soundWrong = () => beep([220, 180], 0.18);
 const soundCoin = () => beep([880, 1175, 1568], 0.09);
 
+// よみあげ から えもじ・きごうを のぞく（「はーと」などと よまれるのを ふせぐ）
+function stripForSpeech(text) {
+  let s = String(text ?? "");
+  try {
+    // えもじ・ハート・おんぷ・ほし など（Unicode Extended_Pictographic）
+    s = s.replace(/\p{Extended_Pictographic}/gu, "");
+  } catch (e) {
+    // ふるいブラウザ用フォールバック（はんいしてい）
+    s = s.replace(/[\u{1F000}-\u{1FFFF}☀-➿⬀-⯿←-⇿]/gu, "");
+  }
+  return s
+    .replace(/[️‍⃣❤♥♡☆★]/g, "") // VS16/ZWJ/keycap・ハート・ほし の のこり
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function speak(text, voice) {
   try {
     speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
+    const clean = stripForSpeech(text);
+    if (!clean) return;
+    const u = new SpeechSynthesisUtterance(clean);
     u.lang = "ja-JP";
     u.rate = voice?.rate ?? 0.9;
     u.pitch = voice?.pitch ?? 1.0;
