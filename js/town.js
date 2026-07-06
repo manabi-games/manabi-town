@@ -179,11 +179,12 @@ function renderTownDynamic() {
     if (p.unlockLv > maxLv) return;
     const npc = document.createElement("div");
     npc.className = "town-npc town-pet";
-    npc.innerHTML = `<span class="pet-emoji">${p.icon}</span><span class="npc-name">${p.name}</span>`;
+    const face = p.img ? `<img class="pet-img" src="${p.img}" alt="">` : `<span class="pet-emoji">${p.icon}</span>`;
+    npc.innerHTML = `${face}<span class="npc-name">${p.name}</span>`;
     npc.addEventListener("click", (e) => { e.stopPropagation(); npcTalk(npc, pick(p.lines)); });
     dyn.appendChild(npc);
-    const base = PARK_X - 160 + i * 90;
-    town.npcs.push({ el: npc, x: base, min: PARK_X - 300, max: PARK_X + 180, dir: rnd(2) ? 1 : -1, speed: 34 + rnd(30), pauseUntil: 0 });
+    const base = PARK_X - 430 + i * 68;
+    town.npcs.push({ el: npc, x: base, min: PARK_X - 470, max: PARK_X + 190, dir: rnd(2) ? 1 : -1, speed: 34 + rnd(30), pauseUntil: 0 });
   });
 
   // すすみぐあいで そらに にじ

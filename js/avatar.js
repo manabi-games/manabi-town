@@ -76,8 +76,17 @@ function renderAvatar(cfg) {
       mouth = `<path d="M 90 122 Q 100 132 110 122" stroke="#3e2723" stroke-width="4" fill="none" stroke-linecap="round"/>`;
   }
 
+  // ---- PNGパーツよう ヘルパー ----
+  // はば w で ちゅうおうに はいち、boxH の わく内に アスペクトひ いじで うえづめ
+  const pngLayer = (src, w, y, boxH) =>
+    `<image href="${src}" x="${100 - w / 2}" y="${y}" width="${w}" height="${boxH}" preserveAspectRatio="xMidYMin meet"/>`;
+
   // ---- かみのけ ----
   let hairSvg = "";
+  const pngHair = PNG_HAIR_MAP[cfg.hairStyle];
+  if (pngHair) {
+    hairSvg = pngLayer(pngHair.img, pngHair.w, pngHair.y, 175);
+  } else
   switch (cfg.hairStyle || "short") {
     case "none": // PNGパーツ用・きじゅんキャラ用
       break;
@@ -138,8 +147,19 @@ function renderAvatar(cfg) {
       break;
   }
 
+  // ---- おようふく（PNG・からだのうえに かさねる） ----
+  let outfitSvg = "";
+  const outfitDef = cfg.outfit && typeof SHOP_ITEM_MAP !== "undefined" ? SHOP_ITEM_MAP[cfg.outfit] : null;
+  if (outfitDef && outfitDef.img) {
+    outfitSvg = pngLayer(outfitDef.img, outfitDef.w, outfitDef.y, 105);
+  }
+
   // ---- ぼうし ----
   let hatSvg = "";
+  const hatDef = cfg.hat && typeof SHOP_ITEM_MAP !== "undefined" ? SHOP_ITEM_MAP[cfg.hat] : null;
+  if (hatDef && hatDef.img) {
+    hatSvg = pngLayer(hatDef.img, hatDef.w, hatDef.y, 165);
+  } else
   switch (cfg.hat) {
     case "hat_cap":
       hatSvg = `<path d="M 54 66 Q 58 34 100 34 Q 142 34 146 66 Z" fill="#e53935"/>
@@ -188,6 +208,6 @@ function renderAvatar(cfg) {
   }
 
   return `<svg viewBox="0 0 200 260" xmlns="http://www.w3.org/2000/svg">
-    ${defs}${legs}${body}${face}${hairSvg}${eyes}${mouth}${glassesSvg}${hatSvg}${itemSvg}
+    ${defs}${legs}${body}${outfitSvg}${face}${hairSvg}${eyes}${mouth}${glassesSvg}${hatSvg}${itemSvg}
   </svg>`;
 }

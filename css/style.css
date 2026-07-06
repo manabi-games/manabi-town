@@ -173,6 +173,11 @@ body {
 .face-left .npc-avatar { transform: scaleX(-1); }
 .pet-emoji { font-size: 2.8rem; display: block; filter: drop-shadow(0 4px 3px rgba(0,0,0,.2)); }
 .face-left .pet-emoji { transform: scaleX(-1); display: block; }
+.pet-img { height: 72px; display: block; margin: 0 auto; filter: drop-shadow(0 4px 3px rgba(0,0,0,.2)); }
+.face-left .pet-img { transform: scaleX(-1); }
+.walking .pet-img { animation: walk-bounce .38s ease-in-out infinite; }
+.item-img { height: 2.9rem; vertical-align: middle; }
+.ci-img { height: 1.9rem; display: block; margin: 0 auto; }
 .npc-name {
   font-size: .8rem; background: rgba(255,255,255,.9); border-radius: 999px;
   padding: 1px 10px; display: inline-block; margin-top: 2px;

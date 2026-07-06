@@ -10,7 +10,7 @@ let resultReturnScreen = "map";  // けっかがめんの あとに もどる �
 function defaultState() {
   return {
     name: "",
-    avatar: { skin: 0, hairStyle: "short", hairColor: 0, eyes: "round", mouth: "smile", shirt: SHIRT_COLORS_FREE[0], hat: null, glasses: null, item: null },
+    avatar: { skin: 0, hairStyle: "short", hairColor: 0, eyes: "round", mouth: "smile", shirt: SHIRT_COLORS_FREE[0], outfit: null, hat: null, glasses: null, item: null },
     coins: 0,
     cleared: {},                 // がっこう { "1": stars, ... }
     typing: { roma: 1, math: 1 }, // タイピング いまひらいている さいだいレベル
@@ -27,6 +27,7 @@ function load() {
         // ふるいセーブデータへの こうもく ついか（v1 → v2）
         if (!parsed.typing) parsed.typing = { roma: 1, math: 1 };
         if (!parsed.avatar.mouth) parsed.avatar.mouth = "smile";
+        if (!("outfit" in parsed.avatar)) parsed.avatar.outfit = null;
         return parsed;
       }
     }
@@ -122,7 +123,9 @@ let makerCfg = null;
 
 const MAKER_ROWS = [
   { key: "skin", label: "はだのいろ", type: "color", values: SKIN_COLORS },
-  { key: "hairStyle", label: "かみがた", type: "opts", values: HAIR_STYLES, labels: HAIR_LABELS },
+  { key: "hairStyle", label: "かみがた", type: "opts",
+    values: [...HAIR_STYLES, ...PNG_HAIRS.map((p) => p.id)],
+    labels: [...HAIR_LABELS, ...PNG_HAIRS.map((p) => p.name)] },
   { key: "hairColor", label: "かみのいろ", type: "color", values: HAIR_COLORS },
   { key: "eyes", label: "め", type: "opts", values: EYE_STYLES, labels: EYE_LABELS },
   { key: "mouth", label: "くち", type: "opts", values: MOUTH_STYLES, labels: MOUTH_LABELS },
@@ -384,8 +387,9 @@ function renderShop() {
     const canBuy = unlocked && !owned && state.coins >= item.price;
     const div = document.createElement("div");
     div.className = "shop-item" + (owned ? " owned" : "") + (unlocked ? "" : " locked");
+    const iconHtml = item.img ? `<img class="item-img" src="${item.img}" alt="">` : item.icon;
     div.innerHTML = `
-      <div class="item-icon">${item.icon}</div>
+      <div class="item-icon">${iconHtml}</div>
       <div class="item-name">${item.name}</div>
       ${unlocked
         ? `<button class="buy-btn" ${owned || !canBuy ? "disabled" : ""}>${owned ? "もってる✓" : `🪙${item.price}`}</button>`
@@ -412,8 +416,9 @@ function renderCloset() {
 
   const sections = [
     { cat: "hat", key: "hat", title: "ぼうし" },
+    { cat: "outfit", key: "outfit", title: "おようふく" },
+    { cat: "shirt", key: "shirt", title: "ふくのいろ" },
     { cat: "glasses", key: "glasses", title: "めがね" },
-    { cat: "shirt", key: "shirt", title: "ふく" },
     { cat: "item", key: "item", title: "もちもの" },
   ];
   sections.forEach((sec) => {
@@ -431,7 +436,8 @@ function renderCloset() {
     }
     SHOP_ITEMS.filter((i) => i.cat === sec.cat && state.owned.includes(i.id)).forEach((item) => {
       const value = sec.cat === "shirt" ? item.color : item.id;
-      box.appendChild(closetBtn(item.icon, item.name, sec.key, value, value));
+      const iconHtml = item.img ? `<img class="ci-img" src="${item.img}" alt="">` : item.icon;
+      box.appendChild(closetBtn(iconHtml, item.name, sec.key, value, value));
     });
     list.appendChild(box);
   });
