@@ -55,6 +55,7 @@
       <span>⭐ <span id="hud-stars">0</span></span>
     </div>
     <button id="btn-enter-door" class="enter-btn hidden">はいる</button>
+    <div id="quest-chip" class="quest-chip hidden"></div>
     <div class="walk-controls">
       <button id="btn-walk-l" class="walk-btn">◀</button>
       <button id="btn-walk-r" class="walk-btn">▶</button>
@@ -166,6 +167,7 @@
   <div class="statusbar">
     <button class="small-btn btn-exit">🚪 そとにでる</button>
     <span class="status-title" id="friend-title"></span>
+    <span id="friend-hearts" class="friend-hearts"></span>
   </div>
   <div class="room friend-room" id="friend-room">
     <div class="room-wall" id="friend-wall"></div>
@@ -175,7 +177,30 @@
     <div id="friend-avatar" class="home-avatar friend-avatar-pos" title="はなしかけてみよう"></div>
     <div id="friend-bubble" class="speech-bubble hidden"></div>
   </div>
-  <p class="town-hint">キャラを タップすると おはなしできるよ</p>
+  <div class="friend-actions">
+    <button id="btn-give-food" class="action-btn">🍎 たべものを あげる</button>
+    <button id="btn-give-gift" class="action-btn">🎁 プレゼントを あげる</button>
+  </div>
+</div>
+
+<!-- ======== たべものやさん ======== -->
+<div id="screen-bakery" class="screen">
+  <div class="statusbar">
+    <button class="small-btn btn-exit">🚪 そとにでる</button>
+    <span class="status-title">🍞 たべものやさん</span>
+    <span class="status-coin">🪙 <span id="bakery-coins">0</span></span>
+  </div>
+  <p class="dojo-desc">たべものを かって、トモダチや ペットに あげよう！</p>
+  <div id="bakery-list" class="shop-list"></div>
+</div>
+
+<!-- ======== えらぶモーダル（たべもの・プレゼント） ======== -->
+<div id="picker-overlay" class="picker-overlay hidden">
+  <div class="picker-card">
+    <h3 id="picker-title"></h3>
+    <div id="picker-list" class="picker-list"></div>
+    <button id="btn-picker-close" class="small-btn">やめる</button>
+  </div>
 </div>
 
 <!-- ======== けっか画面 ======== -->

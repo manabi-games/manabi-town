@@ -189,6 +189,7 @@ function finishTypingQuiz() {
     coinsEarned = correct; // 1もん 1コイン
   }
   state.coins += coinsEarned;
+  const questMsg = questOnTypingClear(course, level, perfect);
   save();
 
   document.getElementById("result-emoji").textContent = perfect ? "🏆" : (correct >= 3 ? "💪" : "😢");
@@ -196,7 +197,8 @@ function finishTypingQuiz() {
   document.getElementById("result-stars").textContent = perfect ? "⭐⭐⭐" : "";
   document.getElementById("result-detail").textContent = `${QUESTIONS_PER_LEVEL}もん中 ${correct}もん せいかい！`;
   document.getElementById("result-reward").textContent = coinsEarned ? `🪙 ${coinsEarned}コイン ゲット！` : "";
-  document.getElementById("result-unlock").innerHTML = unlockMsg || (perfect ? "" : "ぜんもん せいかいで つぎのレベルが ひらくよ");
+  document.getElementById("result-unlock").innerHTML =
+    [unlockMsg, questMsg].filter(Boolean).join("<br>") || (perfect ? "" : "ぜんもん せいかいで つぎのレベルが ひらくよ");
   resultReturnScreen = "dojo";
   showScreen("result");
 

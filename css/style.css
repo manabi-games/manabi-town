@@ -447,6 +447,73 @@ svg .av-leg, svg .av-arm { transform-box: fill-box; transform-origin: 50% 10%; }
 .friend-avatar-pos { left: 38%; }
 .town-hint { text-align: center; margin-top: 10px; font-size: .95rem; color: #8d6e63; }
 
+/* ---------- おねがいクエスト ---------- */
+.quest-chip {
+  position: absolute; top: 64px; left: 10px; z-index: 40;
+  background: #fffde7; border: 3px solid var(--yellow); border-radius: 999px;
+  padding: 7px 16px; font-size: .95rem; box-shadow: var(--shadow);
+  max-width: 78%;
+}
+.quest-mark {
+  position: absolute; top: -34px; left: 50%; transform: translateX(-50%);
+  font-size: 1.9rem; z-index: 12; animation: bob 1s ease-in-out infinite;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,.25));
+}
+
+/* ---------- トモダチのいえ アクション ---------- */
+.friend-hearts { margin-left: auto; font-size: .85rem; letter-spacing: .04em; }
+.heart-title { font-size: .95rem; margin-right: 4px; }
+.friend-actions {
+  display: flex; gap: 12px; justify-content: center; margin-top: 14px; flex-wrap: wrap;
+}
+.action-btn {
+  padding: 13px 24px; font-family: inherit; font-weight: 900; font-size: 1.1rem;
+  color: var(--text); background: #fff; border: 4px solid var(--yellow);
+  border-radius: 999px; cursor: pointer; box-shadow: var(--shadow);
+}
+.action-btn:active { transform: scale(.96); }
+
+/* ---------- えらぶモーダル ---------- */
+.picker-overlay {
+  position: fixed; inset: 0; z-index: 60;
+  background: rgba(93, 64, 55, .45);
+  display: flex; align-items: center; justify-content: center;
+}
+.picker-card {
+  background: #fff; border-radius: 24px; box-shadow: var(--shadow);
+  padding: 20px; width: min(92%, 480px); max-height: 80vh; overflow-y: auto;
+  text-align: center;
+}
+.picker-card h3 { margin-bottom: 12px; font-size: 1.15rem; }
+.picker-list {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px; margin-bottom: 14px;
+}
+.picker-item {
+  padding: 10px 6px; border-radius: 14px; border: 3px solid #eee; background: #fafafa;
+  font-family: inherit; font-weight: 700; font-size: .9rem; color: var(--text);
+  cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.picker-item:active { border-color: var(--primary); background: #fff0f5; }
+.picker-item .pi-icon { font-size: 2rem; }
+.picker-item .pi-icon img { height: 2.4rem; }
+.picker-item .pi-sub { font-size: .75rem; color: #8d6e63; }
+.picker-empty { color: #8d6e63; font-size: .95rem; line-height: 1.8; }
+
+/* ---------- ごはん・たべもの ---------- */
+.food-count { font-size: .8rem; color: #558b2f; }
+.feed-btn {
+  display: block; margin: 8px auto 0; padding: 7px 16px;
+  font-family: inherit; font-weight: 900; font-size: .95rem;
+  background: var(--yellow); border: none; border-radius: 999px;
+  box-shadow: 0 3px 0 #f9a825; cursor: pointer; color: var(--text);
+}
+.feed-bounce { animation: feed-jump .42s ease-in-out 3; }
+@keyframes feed-jump {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-22px); }
+}
+
 /* ---------- 紙吹雪 ---------- */
 #confetti-layer { position: fixed; inset: 0; pointer-events: none; z-index: 50; overflow: hidden; }
 .confetti {

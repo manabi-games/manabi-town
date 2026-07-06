@@ -160,8 +160,19 @@ function renderTownDynamic() {
     if (f.unlockLv <= maxLv) {
       const npc = document.createElement("div");
       npc.className = "town-npc";
-      npc.innerHTML = `<div class="npc-avatar">${renderAvatar(f.avatar)}</div><span class="npc-name">${f.name}</span>`;
-      npc.addEventListener("click", (e) => { e.stopPropagation(); npcTalk(npc, `${pick(f.lines)}`); });
+      const q = state.quest;
+      const mark = q && q.friendId === f.id ? `<span class="quest-mark">${questReady(q) || !q.asked ? "❗" : "📋"}</span>` : "";
+      npc.innerHTML = `${mark}<div class="npc-avatar">${renderAvatar(friendAvatarCfg(f))}</div><span class="npc-name">${f.name}</span>`;
+      npc.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const qi = questInteract(f);
+        if (qi) {
+          npcTalk(npc, qi.text, friendVoice(f.id));
+          if (qi.completed) setTimeout(() => { assignQuestIfNeeded(); renderTownDynamic(); }, 4500);
+        } else {
+          npcTalk(npc, pick(f.lines), friendVoice(f.id));
+        }
+      });
       dyn.appendChild(npc);
       town.npcs.push({ el: npc, x: x + rnd(120), min: x - 130, max: x + 220, dir: rnd(2) ? 1 : -1, speed: 26 + rnd(24), pauseUntil: 0 });
     }
@@ -181,7 +192,7 @@ function renderTownDynamic() {
     npc.className = "town-npc town-pet";
     const face = p.img ? `<img class="pet-img" src="${p.img}" alt="">` : `<span class="pet-emoji">${p.icon}</span>`;
     npc.innerHTML = `${face}<span class="npc-name">${p.name}</span>`;
-    npc.addEventListener("click", (e) => { e.stopPropagation(); npcTalk(npc, pick(p.lines)); });
+    npc.addEventListener("click", (e) => { e.stopPropagation(); petTalk(npc, p); });
     dyn.appendChild(npc);
     const base = PARK_X - 430 + i * 68;
     town.npcs.push({ el: npc, x: base, min: PARK_X - 470, max: PARK_X + 190, dir: rnd(2) ? 1 : -1, speed: 34 + rnd(30), pauseUntil: 0 });
@@ -190,16 +201,47 @@ function renderTownDynamic() {
   // すすみぐあいで そらに にじ
   const rainbow = document.getElementById("town-rainbow");
   rainbow.classList.toggle("hidden", maxLv < 30);
+
+  // おねがいチップ
+  const chip = document.getElementById("quest-chip");
+  if (state.quest) {
+    chip.textContent = questChipText(state.quest);
+    chip.classList.remove("hidden");
+  } else {
+    chip.classList.add("hidden");
+  }
 }
 
-function npcTalk(npcEl, text) {
+function npcTalk(npcEl, text, voice) {
   document.querySelectorAll(".npc-bubble").forEach((b) => b.remove());
   const bubble = document.createElement("div");
   bubble.className = "npc-bubble";
   bubble.textContent = text;
   npcEl.appendChild(bubble);
-  speak(text);
-  setTimeout(() => bubble.remove(), 3600);
+  speak(text, voice);
+  setTimeout(() => bubble.remove(), 4200);
+  return bubble;
+}
+
+// ペット: はなしかけ ＋ たべものを もっていれば あげられる
+function petTalk(npcEl, p) {
+  const bubble = npcTalk(npcEl, pick(p.lines), PET_VOICE);
+  const owned = FOODS.filter((f) => (state.foods[f.id] || 0) > 0);
+  if (!owned.length) return;
+  const btn = document.createElement("button");
+  const food = pick(owned);
+  btn.className = "feed-btn";
+  btn.textContent = `${food.icon} あげる`;
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    state.foods[food.id]--;
+    save();
+    soundCorrect();
+    npcEl.classList.add("feed-bounce");
+    setTimeout(() => npcEl.classList.remove("feed-bounce"), 1300);
+    npcTalk(npcEl, pick(PET_FEED_LINES[p.id] || p.lines), PET_VOICE);
+  });
+  bubble.appendChild(btn);
 }
 
 // ---------- はいれる たてもの ----------
@@ -360,6 +402,7 @@ function townTick(t) {
 // ---------- がめんひょうじ ----------
 function renderTownScreen() {
   if (!town.built) { buildTown(); setupTownControls(); }
+  assignQuestIfNeeded();
   // プレイヤーの みため こうしん
   town.playerEl.innerHTML = `<div class="npc-avatar">${renderAvatar(state.avatar)}</div><span class="npc-name player-name">${state.name}</span>`;
   renderTownDynamic();

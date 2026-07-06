@@ -15,6 +15,10 @@ function defaultState() {
     cleared: {},                 // がっこう { "1": stars, ... }
     typing: { roma: 1, math: 1 }, // タイピング いまひらいている さいだいレベル
     owned: [],                   // かった アイテムID
+    foods: {},                   // たべもの { foodId: かず }
+    friendship: {},              // { friendId: { hearts, } }
+    friendGear: {},              // { friendId: { hat, outfit } }
+    quest: null,                 // いまの おねがい
   };
 }
 function save() { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); }
@@ -28,6 +32,10 @@ function load() {
         if (!parsed.typing) parsed.typing = { roma: 1, math: 1 };
         if (!parsed.avatar.mouth) parsed.avatar.mouth = "smile";
         if (!("outfit" in parsed.avatar)) parsed.avatar.outfit = null;
+        if (!parsed.foods) parsed.foods = {};
+        if (!parsed.friendship) parsed.friendship = {};
+        if (!parsed.friendGear) parsed.friendGear = {};
+        if (!("quest" in parsed)) parsed.quest = null;
         return parsed;
       }
     }
@@ -63,15 +71,18 @@ const soundCorrect = () => beep([660, 880], 0.12);
 const soundWrong = () => beep([220, 180], 0.18);
 const soundCoin = () => beep([880, 1175, 1568], 0.09);
 
-function speak(text) {
+function speak(text, voice) {
   try {
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = "ja-JP";
-    u.rate = 0.9;
+    u.rate = voice?.rate ?? 0.9;
+    u.pitch = voice?.pitch ?? 1.0;
     speechSynthesis.speak(u);
   } catch (e) { /* よみあげ ひたいおう */ }
 }
+const friendVoice = (fid) => FRIEND_EXTRAS[fid]?.voice;
+const PET_VOICE = { pitch: 1.8, rate: 1.2 };
 
 // ---------- 画面遷移 ----------
 const $ = (id) => document.getElementById(id);
@@ -88,6 +99,7 @@ function showScreen(name) {
   if (name === "closet") renderCloset();
   if (name === "dojo") renderDojo();
   if (name === "friend") renderFriendRoom();
+  if (name === "bakery") renderBakery();
 }
 
 function updateHud() {
@@ -339,6 +351,8 @@ function finishQuiz() {
       const newItems = SHOP_ITEMS.filter((i) => i.unlockLv > before && i.unlockLv <= after);
       if (newItems.length) unlocks.push(`🛍️ おみせに あたらしい しなもの が ${newItems.length}こ ならんだ！`);
     }
+    const questMsg = questOnSchoolClear(def.lv);
+    if (questMsg) unlocks.push(questMsg);
     save();
   }
 
@@ -454,14 +468,201 @@ function closetBtn(icon, name, key, value, equipVal) {
   return b;
 }
 
+// ---------- なかよしど（ハート） ----------
+function fdata(fid) {
+  state.friendship[fid] = state.friendship[fid] || { hearts: 0 };
+  return state.friendship[fid];
+}
+function heartTitle(h) {
+  return HEART_TITLES.find((t) => h >= t.min).title;
+}
+// ハートを ふやす。マイルストーンで トモダチから プレゼント。おれいメッセージの配列を返す
+function addHearts(fid, n) {
+  const fd = fdata(fid);
+  const before = fd.hearts;
+  fd.hearts = Math.min(HEART_MAX, fd.hearts + n);
+  const msgs = [];
+  HEART_GIFT_LEVELS.filter((lv) => before < lv && fd.hearts >= lv).forEach(() => {
+    const candidates = SHOP_ITEMS.filter((i) => !state.owned.includes(i.id) && i.price <= 150 && i.cat !== "room");
+    if (candidates.length) {
+      const it = pick(candidates);
+      state.owned.push(it.id);
+      msgs.push(`おれいに「${it.name}」をくれた！🎁`);
+    } else {
+      state.coins += 50;
+      msgs.push("おれいに 50コインくれた！🪙");
+    }
+  });
+  save();
+  return msgs;
+}
+
+// ---------- おねがいクエスト ----------
+function friendById(fid) { return FRIENDS.find((f) => f.id === fid); }
+
+// まちに もどるたびに、おねがいが なければ だれかに わりあてる
+function assignQuestIfNeeded() {
+  if (state.quest) return;
+  const unlocked = FRIENDS.filter((f) => f.unlockLv <= maxCleared());
+  if (!unlocked.length) return;
+  const f = pick(unlocked);
+  const kind = pick(["food", "school", "typing"]);
+  if (kind === "food") {
+    state.quest = { friendId: f.id, kind, foodId: pick(FOODS).id, met: false, asked: false };
+  } else if (kind === "school") {
+    const next = Math.min(maxCleared() + 1, 30);
+    const level = state.cleared[next] ? rndInt(1, 30) : next;
+    state.quest = { friendId: f.id, kind, level, met: false, asked: false };
+  } else {
+    const course = pick(TYPING_COURSES).id;
+    const level = Math.min(state.typing[course], TYPING_MAX_LEVEL);
+    state.quest = { friendId: f.id, kind, course, level, met: false, asked: false };
+  }
+  save();
+}
+
+function questAskLine(q) {
+  const f = friendById(q.friendId);
+  if (q.kind === "food") {
+    const food = FOOD_MAP[q.foodId];
+    return `おなかすいたなあ…${food.name}${food.icon}が たべたいな。たべものやさんで かってきて くれる？`;
+  }
+  if (q.kind === "school") {
+    const def = LEVELS[q.level - 1];
+    return `がっこうの レベル${q.level}「${def.title}」を クリアするところが みたいな！`;
+  }
+  const cName = TYPING_COURSES.find((c) => c.id === q.course).name;
+  return `タイピングどうじょうの ${cName} レベル${q.level}を ぜんもんせいかい してみせて！`;
+}
+
+function questChipText(q) {
+  const f = friendById(q.friendId);
+  if (!q.asked) return `❗ ${f.name}が よんでいるよ`;
+  if (q.kind === "food") return `📋 ${f.name}に ${FOOD_MAP[q.foodId].name}${FOOD_MAP[q.foodId].icon}を とどけよう`;
+  if (q.kind === "school") return `📋 がっこう レベル${q.level}を クリアしよう`;
+  return `📋 タイピング(${TYPING_COURSES.find((c) => c.id === q.course).name}) レベル${q.level}を クリアしよう`;
+}
+
+// おねがいが かなえられる じょうたいか
+function questReady(q) {
+  if (q.kind === "food") return (state.foods[q.foodId] || 0) > 0;
+  return q.met;
+}
+
+// トモダチを タップ/ほうもん したときの クエストかいわ。null なら ふつうのセリフ
+function questInteract(f) {
+  const q = state.quest;
+  if (!q || q.friendId !== f.id) return null;
+  const ex = FRIEND_EXTRAS[f.id];
+  if (!q.asked) {
+    q.asked = true;
+    save();
+    return { text: questAskLine(q), voice: ex.voice };
+  }
+  if (questReady(q)) {
+    if (q.kind === "food") state.foods[q.foodId]--;
+    state.coins += QUEST_REWARD_COINS;
+    const heartMsgs = addHearts(f.id, q.kind === "food" && q.foodId === ex.favFood ? 2 : 1);
+    state.quest = null;
+    save();
+    launchConfetti(20);
+    soundCoin();
+    const extra = [`🪙${QUEST_REWARD_COINS} ❤️なかよしど アップ！`, ...heartMsgs].join("　");
+    return { text: `${pick(ex.questThanks)}　${extra}`, voice: ex.voice, completed: true };
+  }
+  return { text: ex.remind, voice: ex.voice };
+}
+
+// がっこう・タイピングの クリアで おねがい たっせい チェック
+function questOnSchoolClear(lv) {
+  const q = state.quest;
+  if (q && q.kind === "school" && q.level === lv && !q.met) {
+    q.met = true;
+    save();
+    return `📋 ${friendById(q.friendId).name}との やくそく たっせい！はなしに いこう！`;
+  }
+  return null;
+}
+function questOnTypingClear(course, lv, perfect) {
+  const q = state.quest;
+  if (perfect && q && q.kind === "typing" && q.course === course && q.level === lv && !q.met) {
+    q.met = true;
+    save();
+    return `📋 ${friendById(q.friendId).name}との やくそく たっせい！はなしに いこう！`;
+  }
+  return null;
+}
+
+// ---------- たべものやさん ----------
+function renderBakery() {
+  $("bakery-coins").textContent = state.coins;
+  const list = $("bakery-list");
+  list.innerHTML = "";
+  FOODS.forEach((food) => {
+    const count = state.foods[food.id] || 0;
+    const canBuy = state.coins >= food.price;
+    const div = document.createElement("div");
+    div.className = "shop-item";
+    div.innerHTML = `
+      <div class="item-icon">${food.icon}</div>
+      <div class="item-name">${food.name}${count ? `<br><span class="food-count">もってる: ${count}こ</span>` : ""}</div>
+      <button class="buy-btn" ${canBuy ? "" : "disabled"}>🪙${food.price}</button>`;
+    div.querySelector(".buy-btn").addEventListener("click", () => {
+      if (state.coins < food.price) return;
+      state.coins -= food.price;
+      state.foods[food.id] = (state.foods[food.id] || 0) + 1;
+      save();
+      soundCoin();
+      speak(`${food.name}を かったよ！`);
+      renderBakery();
+    });
+    list.appendChild(div);
+  });
+}
+
+// ---------- えらぶモーダル ----------
+function openPicker(title, entries) {
+  $("picker-title").textContent = title;
+  const list = $("picker-list");
+  list.innerHTML = "";
+  if (!entries.length) {
+    list.innerHTML = `<p class="picker-empty">まだ なにも もっていないよ…<br>おみせや たべものやさんに いってみよう！</p>`;
+  }
+  entries.forEach((e) => {
+    const b = document.createElement("button");
+    b.className = "picker-item";
+    b.innerHTML = `<span class="pi-icon">${e.icon}</span><span>${e.label}</span>${e.sub ? `<span class="pi-sub">${e.sub}</span>` : ""}`;
+    b.addEventListener("click", () => { closePicker(); e.onPick(); });
+    list.appendChild(b);
+  });
+  $("picker-overlay").classList.remove("hidden");
+}
+function closePicker() { $("picker-overlay").classList.add("hidden"); }
+$("btn-picker-close").addEventListener("click", closePicker);
+
 // ---------- トモダチのいえ ----------
 const FRIEND_DECO = ["🪟", "🖼️", "🪴", "🛋️", "📚", "🧸"];
+
+function friendAvatarCfg(f) {
+  const gear = state.friendGear[f.id] || {};
+  return { ...f.avatar, hat: gear.hat || null, outfit: gear.outfit || null };
+}
+
+function renderFriendHearts() {
+  const f = currentFriend;
+  const fd = fdata(f.id);
+  $("friend-hearts").innerHTML =
+    `<span class="heart-title">${heartTitle(fd.hearts)}</span> ` +
+    "❤️".repeat(fd.hearts) + "🤍".repeat(HEART_MAX - fd.hearts);
+}
+
 function renderFriendRoom() {
   const f = currentFriend;
   if (!f) { showScreen("town"); return; }
   $("friend-title").textContent = `🏠 ${f.name}のいえ`;
   $("friend-wall").style.background = `linear-gradient(180deg, ${f.houseColor}33, ${f.houseColor}22)`;
-  $("friend-avatar").innerHTML = renderAvatar(f.avatar);
+  $("friend-avatar").innerHTML = renderAvatar(friendAvatarCfg(f));
+  renderFriendHearts();
   const deco = $("friend-deco");
   deco.innerHTML = "";
   const idx = FRIENDS.indexOf(f);
@@ -473,20 +674,93 @@ function renderFriendRoom() {
     d.style.bottom = ["10%", "28%", "6%"][i];
     deco.appendChild(d);
   });
-  // はいったら あいさつ
-  setTimeout(() => friendSay(pick(f.lines)), 400);
+  // はいったら あいさつ（おねがいが あれば そっちを ゆうせん）
+  setTimeout(() => {
+    const qi = questInteract(f);
+    if (qi) { friendSay(qi.text, f); renderFriendHearts(); }
+    else friendSay(pick(f.lines), f);
+  }, 400);
 }
-function friendSay(line) {
+
+function friendSay(line, f) {
   const bubble = $("friend-bubble");
   bubble.textContent = line;
   bubble.classList.remove("hidden");
-  speak(line);
+  speak(line, f ? friendVoice(f.id) : undefined);
   clearTimeout(bubble._t);
-  bubble._t = setTimeout(() => bubble.classList.add("hidden"), 3800);
+  bubble._t = setTimeout(() => bubble.classList.add("hidden"), 4200);
 }
 $("friend-avatar").addEventListener("click", () => {
-  if (currentFriend) friendSay(pick(currentFriend.lines));
+  const f = currentFriend;
+  if (!f) return;
+  const qi = questInteract(f);
+  if (qi) { friendSay(qi.text, f); renderFriendHearts(); }
+  else friendSay(pick(f.lines), f);
 });
+
+// たべものを あげる
+$("btn-give-food").addEventListener("click", () => {
+  const f = currentFriend;
+  if (!f) return;
+  const entries = FOODS.filter((food) => (state.foods[food.id] || 0) > 0).map((food) => ({
+    icon: food.icon,
+    label: food.name,
+    sub: `もってる: ${state.foods[food.id]}こ`,
+    onPick: () => giveFood(f, food),
+  }));
+  openPicker(`${f.name}に なにを あげる？`, entries);
+});
+
+function giveFood(f, food) {
+  const ex = FRIEND_EXTRAS[f.id];
+  const q = state.quest;
+  // おねがいの たべものなら クエストたっせい
+  if (q && q.friendId === f.id && q.kind === "food" && q.foodId === food.id && q.asked) {
+    const qi = questInteract(f); // ここで しょうひ・ほうしゅう
+    friendSay(qi.text, f);
+    renderFriendHearts();
+    return;
+  }
+  state.foods[food.id]--;
+  let line, hearts;
+  if (food.id === ex.favFood) { line = ex.foodLove; hearts = 2; launchConfetti(15); }
+  else if (food.id === ex.badFood) { line = ex.foodBad; hearts = 0; }
+  else { line = ex.foodOk; hearts = 1; }
+  const msgs = hearts ? addHearts(f.id, hearts) : [];
+  save();
+  if (hearts) soundCorrect();
+  friendSay([line, ...(hearts ? [`❤️なかよしど +${hearts}`] : []), ...msgs].join("　"), f);
+  renderFriendHearts();
+}
+
+// プレゼントを あげる（ぼうし・おようふく）
+$("btn-give-gift").addEventListener("click", () => {
+  const f = currentFriend;
+  if (!f) return;
+  const gear = state.friendGear[f.id] || {};
+  const entries = SHOP_ITEMS
+    .filter((i) => (i.cat === "hat" || i.cat === "outfit") && state.owned.includes(i.id))
+    .filter((i) => gear.hat !== i.id && gear.outfit !== i.id)
+    .map((i) => ({
+      icon: i.img ? `<img class="ci-img" src="${i.img}" alt="">` : i.icon,
+      label: i.name,
+      onPick: () => giveGift(f, i),
+    }));
+  openPicker(`${f.name}に なにを プレゼントする？`, entries);
+});
+
+function giveGift(f, item) {
+  state.friendGear[f.id] = state.friendGear[f.id] || {};
+  const slot = item.cat === "hat" ? "hat" : "outfit";
+  state.friendGear[f.id][slot] = item.id;
+  const msgs = addHearts(f.id, 1);
+  save();
+  soundCorrect();
+  launchConfetti(15);
+  $("friend-avatar").innerHTML = renderAvatar(friendAvatarCfg(f));
+  friendSay([pick(FRIEND_EXTRAS[f.id].giftThanks), "❤️なかよしど +1", ...msgs].join("　"), f);
+  renderFriendHearts();
+}
 
 // ---------- 紙吹雪 ----------
 const CONFETTI_GLYPHS = ["🎉", "⭐", "🌸", "💛", "🎈", "✨"];

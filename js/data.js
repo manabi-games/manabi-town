@@ -138,17 +138,124 @@ const PNG_HAIRS = [
 const PNG_HAIR_MAP = Object.fromEntries(PNG_HAIRS.map((p) => [p.id, p]));
 
 // ---------- まちの建物 ----------
-const TOWN_W = 3260;
+const TOWN_W = 3580;
 const BUILDINGS = [
   { id: "myhome", x: 150,  w: 230, name: "じぶんのいえ", emoji: "🏠", wall: "#fff3e0", roof: "#4fc3f7", screen: "home" },
   { id: "school", x: 520,  w: 300, name: "がっこう",     emoji: "🏫", wall: "#ffecb3", roof: "#e57373", screen: "map" },
   { id: "dojo",   x: 980,  w: 260, name: "タイピングどうじょう", emoji: "⌨️", wall: "#e8f5e9", roof: "#66bb6a", screen: "dojo" },
-  { id: "shop",   x: 1390, w: 260, name: "おみせ",       emoji: "🛍️", wall: "#fff8e1", roof: "#ffa726", screen: "shop", awning: true },
+  { id: "bakery", x: 1390, w: 230, name: "たべものやさん", emoji: "🍞", wall: "#ffe9d6", roof: "#a1887f", screen: "bakery", awning: true },
+  { id: "shop",   x: 1720, w: 260, name: "おみせ",       emoji: "🛍️", wall: "#fff8e1", roof: "#ffa726", screen: "shop", awning: true },
 ];
 // トモダチの家（unlockLvで出現）
-const FRIEND_HOUSE_X = [1790, 1990, 2190, 2390, 2590, 2790];
+const FRIEND_HOUSE_X = [2120, 2320, 2520, 2720, 2920, 3120];
 // こうえん（ペットがあつまる）
-const PARK_X = 3020;
+const PARK_X = 3350;
+
+// ---------- なかよしど（ハート） ----------
+const HEART_MAX = 10;
+const HEART_TITLES = [
+  { min: 10, title: "しんゆう💖" },
+  { min: 6,  title: "なかよし💕" },
+  { min: 3,  title: "ともだち💗" },
+  { min: 0,  title: "しりあい🤍" },
+];
+const QUEST_REWARD_COINS = 15;
+const HEART_GIFT_LEVELS = [3, 6, 10]; // ここに とうたつすると トモダチから プレゼント
+
+// ---------- たべもの ----------
+const FOODS = [
+  { id: "food_apple",      name: "りんご",     icon: "🍎", price: 15 },
+  { id: "food_banana",     name: "バナナ",     icon: "🍌", price: 15 },
+  { id: "food_strawberry", name: "いちご",     icon: "🍓", price: 20 },
+  { id: "food_orange",     name: "みかん",     icon: "🍊", price: 15 },
+  { id: "food_grape",      name: "ぶどう",     icon: "🍇", price: 20 },
+  { id: "food_watermelon", name: "すいか",     icon: "🍉", price: 25 },
+  { id: "food_cake",       name: "ケーキ",     icon: "🍰", price: 30 },
+  { id: "food_cookie",     name: "クッキー",   icon: "🍪", price: 20 },
+  { id: "food_candy",      name: "あめ",       icon: "🍬", price: 10 },
+  { id: "food_chocolate",  name: "チョコ",     icon: "🍫", price: 25 },
+  { id: "food_icecream",   name: "アイス",     icon: "🍦", price: 30 },
+  { id: "food_donut",      name: "ドーナツ",   icon: "🍩", price: 25 },
+];
+const FOOD_MAP = Object.fromEntries(FOODS.map((f) => [f.id, f]));
+
+// ---------- トモダチの こせい（こえ・だいこうぶつ・セリフ） ----------
+const FRIEND_EXTRAS = {
+  f1: {
+    voice: { pitch: 1.6, rate: 0.95 },
+    favFood: "food_strawberry", badFood: "food_chocolate",
+    foodLove: "わあ、いちご！！だいすきなの💕 ありがとう！！",
+    foodOk: "おいしいね…🌸 ありがとうね",
+    foodBad: "チョコは ちょっと にがてなの…でも きもちが うれしいな",
+    giftThanks: ["わあ、すてき…💕 ありがとう！", "これ すごく かわいい…💗 だいじにするね！"],
+    questThanks: ["ありがとう…たすかっちゃった🌸", "うれしい…やさしいんだね…💕"],
+    remind: "あのね…おねがい、まってるね🌸",
+  },
+  f2: {
+    voice: { pitch: 0.8, rate: 1.1 },
+    favFood: "food_banana", badFood: "food_cake",
+    foodLove: "バナナ！！さいこうだぜ！！⚽ パワー100ぱーせんとだ！！",
+    foodOk: "おお！うめえ！ありがとな！",
+    foodBad: "ケーキかあ…あまいの にがてなんだよな…でも ありがとな！",
+    giftThanks: ["うおお！すげえ！ありがとだぜ！🔥", "こんなの もらっちゃっていいのか？ さいこうだぜ！"],
+    questThanks: ["おし！やってくれたんだな！ありがとだぜ！", "よっしゃ！たすかったぜ！"],
+    remind: "おーい！れいの おねがい、たのんだぜ！",
+  },
+  f3: {
+    voice: { pitch: 1.7, rate: 0.85 },
+    favFood: "food_grape", badFood: "food_candy",
+    foodLove: "ぶどう…✨ つぶつぶが ほしみたいで だいすき…✨ ありがとう…",
+    foodOk: "おいしいね…☁️ ありがとう…",
+    foodBad: "あめは…はが いたくなっちゃうの…でも ありがとう…",
+    giftThanks: ["わあ…きれい…✨ ありがとう…💫", "これ…すてき…✨ だいじにするね…"],
+    questThanks: ["ありがとう…やさしいね…✨", "たすかったよ…ありがとう…☁️"],
+    remind: "あのね…おねがいのこと…おぼえてる…？",
+  },
+  f4: {
+    voice: { pitch: 0.55, rate: 1.12 },
+    favFood: "food_watermelon", badFood: "food_cookie",
+    foodLove: "がはは！！すいか！！さいこうだ！！🍉 ありがとな！！",
+    foodOk: "おっ！うめえ！ありがとよ！",
+    foodBad: "クッキーかあ…ちっちゃくて たりねえなあ…がはは！でも ありがとよ！",
+    giftThanks: ["がはは！いいもん もらった！ありがとよ！🎉", "おお！これは かっこいいぞ！ありがとな！"],
+    questThanks: ["がはは！やってくれたか！ありがとな！", "よし！たすかったぞ！"],
+    remind: "おう！れいの おねがい、まってるぞ！がはは！",
+  },
+  f5: {
+    voice: { pitch: 1.45, rate: 1.05 },
+    favFood: "food_donut", badFood: "food_watermelon",
+    foodLove: "ドーナツ！！さいこうなの…💕 ありがとうなの♪♪",
+    foodOk: "おいしい…☆ ありがとなの♪",
+    foodBad: "すいかは たねが にがてなの…でも ありがとね♪",
+    giftThanks: ["わあ！かわいい…💕 ありがとうなの♪", "すてき…♪ だいじにするなの✨"],
+    questThanks: ["ありがとうなの♪ おれいに こんど ケーキ やくね！", "うれしい…ありがとなの…♪"],
+    remind: "ねえねえ、おねがいのこと わすれてないよね？♪",
+  },
+  f6: {
+    voice: { pitch: 1.15, rate: 0.88 },
+    favFood: "food_icecream", badFood: "food_apple",
+    foodLove: "アイス…！ わたしの だいこうぶつ、よく わかったね🍦 ありがとう",
+    foodOk: "おいしいね、ありがとう",
+    foodBad: "りんごは すこし にがてなの…でも きもちは うれしいわ",
+    giftThanks: ["ありがとう、とても うれしいわ💫", "すてきね、たいせつに するわね"],
+    questThanks: ["ありがとう、たすかったわ", "さすがね、ありがとう"],
+    remind: "れいの おねがい、おぼえていてね",
+  },
+};
+
+// ---------- ペットに ごはんを あげたとき ----------
+const PET_FEED_LINES = {
+  p1:  ["ワンワン！！おいしいー！🐕", "しっぽ ぶんぶん！ありがとう！"],
+  p2:  ["ニャ〜ン😸 おいしい…", "ゴロゴロ…ありがとね♪"],
+  p3:  ["ぴょんぴょん！🐰 おいしーい！", "はな ひくひく…ありがとう！"],
+  p4:  ["オイシイ！オイシイ！🦜", "アリガトー！ピピッ♪"],
+  p5:  ["キラキラ〜✨ おいしい！🦄", "にじいろの あじが する〜✨"],
+  p6:  ["ほっぺに つめちゃお！🐹", "もぐもぐ…ありがとう…"],
+  p7:  ["もぐもぐ…🐼 おいしいね…", "ささより おいしいかも…！"],
+  p8:  ["コンコン！🦊 うまい！", "しっぽが ふわっと しちゃった！"],
+  p9:  ["ゆっくり あじわうよ…🐢", "のんびり…もぐもぐ…ありがとう"],
+  p10: ["ペタペタ！🐧 おいしい！", "おさかなの つぎに すき！"],
+};
 
 // ---------- ことばバンク ----------
 const HIRAGANA_WORDS = [
