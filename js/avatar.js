@@ -79,6 +79,8 @@ function renderAvatar(cfg) {
   // ---- かみのけ ----
   let hairSvg = "";
   switch (cfg.hairStyle || "short") {
+    case "none": // PNGパーツ用・きじゅんキャラ用
+      break;
     case "spiky":
       hairSvg = `<path d="M 48 96 Q 46 56 62 58 L 66 44 L 78 56 L 88 40 L 98 56 L 110 40 L 118 56 L 132 44 L 136 58 Q 154 56 152 96 Q 140 62 100 62 Q 60 62 48 96 Z" fill="${hair}"/>`;
       break;
