@@ -19,6 +19,10 @@ function defaultState() {
     friendship: {},              // { friendId: { hearts, } }
     friendGear: {},              // { friendId: { hat, outfit } }
     quest: null,                 // いまの おねがい
+    tickets: 3,                  // つりけん（さいしょに 3まい プレゼント）
+    fish: {},                    // つった さかな { fishId: かず }
+    daily: null,                 // きょうのミッション
+    lastGift: null,              // ログインプレゼントを もらった ひ
   };
 }
 function save() { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); }
@@ -36,6 +40,11 @@ function load() {
         if (!parsed.friendship) parsed.friendship = {};
         if (!parsed.friendGear) parsed.friendGear = {};
         if (!("quest" in parsed)) parsed.quest = null;
+        if (typeof parsed.tickets !== "number") parsed.tickets = 3;
+        if (!parsed.fish) parsed.fish = {};
+        if (!("daily" in parsed)) parsed.daily = null;
+        if (!("lastGift" in parsed)) parsed.lastGift = null;
+        // ふるい quest に fish しゅるいは ないので そのまま OK
         return parsed;
       }
     }
@@ -118,12 +127,109 @@ function showScreen(name) {
   if (name === "dojo") renderDojo();
   if (name === "friend") renderFriendRoom();
   if (name === "bakery") renderBakery();
+  if (name === "fishing") renderFishing();
+  if (name === "zukan") renderZukan();
 }
 
 function updateHud() {
   $("hud-name").textContent = state.name;
   $("hud-coins").textContent = state.coins;
+  $("hud-tickets").textContent = state.tickets;
   $("hud-stars").textContent = totalStars();
+}
+
+// ---------- トースト通知 ----------
+let toastQueue = [];
+let toastShowing = false;
+function toast(msg) {
+  toastQueue.push(msg);
+  if (!toastShowing) nextToast();
+}
+function nextToast() {
+  const msg = toastQueue.shift();
+  if (!msg) { toastShowing = false; return; }
+  toastShowing = true;
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.remove("hidden");
+  setTimeout(() => {
+    t.classList.add("hidden");
+    setTimeout(nextToast, 250);
+  }, 2600);
+}
+
+// ---------- きょうのミッション ----------
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+}
+// まいにち 3つ ランダムに えらぶ
+function ensureDaily() {
+  const today = todayStr();
+  if (!state.daily || state.daily.date !== today) {
+    state.daily = { date: today, ids: shuffle(DAILY_MISSION_POOL.map((m) => m.id)).slice(0, 3), done: {}, bonus: false };
+    save();
+  }
+}
+// ミッションたっせい チェック（かんりょうずみなら なにもしない）
+function dailyProgress(id) {
+  if (!state.daily || state.daily.date !== todayStr()) ensureDaily();
+  const d = state.daily;
+  if (!d.ids.includes(id) || d.done[id]) return;
+  d.done[id] = true;
+  state.tickets += TICKET_MISSION;
+  const m = DAILY_MISSION_POOL.find((x) => x.id === id);
+  toast(`📝 ミッションたっせい！「${m.label}」 🎫+${TICKET_MISSION}`);
+  soundCoin();
+  if (d.ids.every((i) => d.done[i]) && !d.bonus) {
+    d.bonus = true;
+    state.coins += MISSION_BONUS_COINS;
+    toast(`🎉 きょうのミッション ぜんぶクリア！ 🪙+${MISSION_BONUS_COINS}`);
+    launchConfetti(30);
+  }
+  save();
+  updateHud();
+}
+
+function renderMissions() {
+  ensureDaily();
+  const list = $("mission-list");
+  list.innerHTML = "";
+  state.daily.ids.forEach((id) => {
+    const m = DAILY_MISSION_POOL.find((x) => x.id === id);
+    const done = !!state.daily.done[id];
+    const div = document.createElement("div");
+    div.className = "mission-item" + (done ? " done" : "");
+    div.innerHTML = `<span class="mi-check">${done ? "✅" : "⬜"}</span><span class="mi-icon">${m.icon}</span><span class="mi-label">${m.label}</span>`;
+    list.appendChild(div);
+  });
+}
+$("btn-missions").addEventListener("click", () => {
+  renderMissions();
+  $("mission-overlay").classList.remove("hidden");
+});
+$("btn-mission-close").addEventListener("click", () => $("mission-overlay").classList.add("hidden"));
+
+// ---------- ログインプレゼント（1にち 1かい） ----------
+function checkLoginGift() {
+  const today = todayStr();
+  if (state.lastGift === today) return;
+  const unlocked = FRIENDS.filter((f) => f.unlockLv <= maxCleared());
+  state.lastGift = today;
+  const roll = rnd(3);
+  let giftMsg;
+  if (roll === 0) { state.tickets += 2; giftMsg = "つりけん 🎫2まい"; }
+  else if (roll === 1) { state.coins += 20; giftMsg = "🪙20コイン"; }
+  else {
+    const food = pick(FOODS);
+    state.foods[food.id] = (state.foods[food.id] || 0) + 1;
+    giftMsg = `${food.icon}${food.name}`;
+  }
+  save();
+  updateHud();
+  const from = unlocked.length ? pick(unlocked).name : "まちのみんな";
+  toast(`🎁 きょうのプレゼント！ ${from}から ${giftMsg}を もらったよ！`);
+  soundCoin();
 }
 
 // 「そとにでる」ボタン ぜんぶ
@@ -353,12 +459,17 @@ function finishQuiz() {
   let coinsEarned = 0;
   const unlocks = [];
 
+  let ticketsEarned = 0;
   if (passed) {
     const firstTime = !state.cleared[def.lv];
     coinsEarned = firstTime ? COIN_CLEAR : COIN_REPLAY;
     if (correct === 5) coinsEarned += COIN_PERFECT;
+    if (firstTime) ticketsEarned += TICKET_FIRST_CLEAR;
+    if (correct === 5) ticketsEarned += TICKET_PERFECT;
     state.coins += coinsEarned;
+    state.tickets += ticketsEarned;
     state.cleared[def.lv] = Math.max(state.cleared[def.lv] || 0, stars);
+    dailyProgress("school");
 
     const after = maxCleared();
     if (after > before) {
@@ -380,7 +491,9 @@ function finishQuiz() {
     : "もうすこし！";
   $("result-stars").textContent = "⭐".repeat(stars) + "☆".repeat(3 - stars);
   $("result-detail").textContent = `${QUESTIONS_PER_LEVEL}もん中 ${correct}もん せいかい！`;
-  $("result-reward").textContent = passed ? `🪙 ${coinsEarned}コイン ゲット！` : "3もん いじょう せいかいで クリアだよ";
+  $("result-reward").textContent = passed
+    ? `🪙${coinsEarned}コイン${ticketsEarned ? ` ＋ つりけん🎫${ticketsEarned}まい` : ""} ゲット！`
+    : "3もん いじょう せいかいで クリアだよ";
   $("result-unlock").innerHTML = unlocks.join("<br>");
   resultReturnScreen = "map";
   showScreen("result");
@@ -524,9 +637,13 @@ function assignQuestIfNeeded() {
   const unlocked = FRIENDS.filter((f) => f.unlockLv <= maxCleared());
   if (!unlocked.length) return;
   const f = pick(unlocked);
-  const kind = pick(["food", "school", "typing"]);
+  const kind = pick(["food", "school", "typing", "fish"]);
   if (kind === "food") {
     state.quest = { friendId: f.id, kind, foodId: pick(FOODS).id, met: false, asked: false };
+  } else if (kind === "fish") {
+    // つれる さかな（ふつう/めずらしい）から えらぶ
+    const target = pick(FISHES.filter((fs) => fs.rarity === "normal" || fs.rarity === "rare"));
+    state.quest = { friendId: f.id, kind, fishId: target.id, met: false, asked: false };
   } else if (kind === "school") {
     const next = Math.min(maxCleared() + 1, 30);
     const level = state.cleared[next] ? rndInt(1, 30) : next;
@@ -545,6 +662,10 @@ function questAskLine(q) {
     const food = FOOD_MAP[q.foodId];
     return `おなかすいたなあ…${food.name}${food.icon}が たべたいな。たべものやさんで かってきて くれる？`;
   }
+  if (q.kind === "fish") {
+    const fish = FISH_MAP[q.fishId];
+    return `つりばで「${fish.name}」を つって みせてほしいな！${RARITY_INFO[fish.rarity].stars}の さかなだよ`;
+  }
   if (q.kind === "school") {
     const def = LEVELS[q.level - 1];
     return `がっこうの レベル${q.level}「${def.title}」を クリアするところが みたいな！`;
@@ -557,6 +678,7 @@ function questChipText(q) {
   const f = friendById(q.friendId);
   if (!q.asked) return `❗ ${f.name}が よんでいるよ`;
   if (q.kind === "food") return `📋 ${f.name}に ${FOOD_MAP[q.foodId].name}${FOOD_MAP[q.foodId].icon}を とどけよう`;
+  if (q.kind === "fish") return `📋 つりばで ${FISH_MAP[q.fishId].name}を つろう🎣`;
   if (q.kind === "school") return `📋 がっこう レベル${q.level}を クリアしよう`;
   return `📋 タイピング(${TYPING_COURSES.find((c) => c.id === q.course).name}) レベル${q.level}を クリアしよう`;
 }
@@ -564,6 +686,7 @@ function questChipText(q) {
 // おねがいが かなえられる じょうたいか
 function questReady(q) {
   if (q.kind === "food") return (state.foods[q.foodId] || 0) > 0;
+  if (q.kind === "fish") return (state.fish[q.fishId] || 0) > 0;
   return q.met;
 }
 
@@ -579,13 +702,17 @@ function questInteract(f) {
   }
   if (questReady(q)) {
     if (q.kind === "food") state.foods[q.foodId]--;
+    // fish は「みせるだけ」なので へらさない（ずかんを まもるため）
     state.coins += QUEST_REWARD_COINS;
+    state.tickets += TICKET_QUEST;
     const heartMsgs = addHearts(f.id, q.kind === "food" && q.foodId === ex.favFood ? 2 : 1);
     state.quest = null;
     save();
     launchConfetti(20);
     soundCoin();
-    const extra = [`🪙${QUEST_REWARD_COINS} ❤️なかよしど アップ！`, ...heartMsgs].join("　");
+    dailyProgress("quest");
+    updateHud();
+    const extra = [`🪙${QUEST_REWARD_COINS} 🎫${TICKET_QUEST} ❤️なかよしど アップ！`, ...heartMsgs].join("　");
     return { text: `${pick(ex.questThanks)}　${extra}`, voice: ex.voice, completed: true };
   }
   return { text: ex.remind, voice: ex.voice };
@@ -740,6 +867,7 @@ function giveFood(f, food) {
     return;
   }
   state.foods[food.id]--;
+  dailyProgress("feed");
   let line, hearts;
   if (food.id === ex.favFood) { line = ex.foodLove; hearts = 2; launchConfetti(15); }
   else if (food.id === ex.badFood) { line = ex.foodBad; hearts = 0; }
@@ -796,5 +924,6 @@ function launchConfetti(n) {
   }
 }
 
-// ---------- タイピングどうじょう そうさ とうろく ----------
+// ---------- タイピングどうじょう・つりば そうさ とうろく ----------
 setupTypingControls();
+setupFishingControls();

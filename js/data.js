@@ -137,8 +137,79 @@ const PNG_HAIRS = [
 ];
 const PNG_HAIR_MAP = Object.fromEntries(PNG_HAIRS.map((p) => [p.id, p]));
 
+// ---------- つり ----------
+// さかなデータは「つりじま」から移植（名前・レアどは原作準拠）
+const fishDef = (id, name, rarity, img) => ({ id, name, rarity, img: `assets/fish/${img}.png` });
+const FISHES = [
+  fishDef("medaka",     "ひかりメダカ",       "normal", "medaka"),
+  fishDef("funna",      "まるフナ",           "normal", "funna"),
+  fishDef("tanago",     "ももタナゴ",         "normal", "tanago"),
+  fishDef("dojo",       "にょろドジョウ",     "normal", "dojo"),
+  fishDef("koi_baby",   "こいこいコイ",       "normal", "koi_baby"),
+  fishDef("yamame",     "しまヤマメ",         "normal", "yamame"),
+  fishDef("hasu",       "はねハス",           "normal", "hasu"),
+  fishDef("kawaebi",    "ぴょんエビ",         "normal", "kawaebi"),
+  fishDef("iwashi",     "きらめきイワシ",     "normal", "iwashi"),
+  fishDef("aji",        "はやてアジ",         "normal", "aji"),
+  fishDef("tai_small",  "こだいタイ",         "normal", "tai_small"),
+  fishDef("ankou",      "ランプアンコウ",     "normal", "ankou"),
+  fishDef("ika",        "すいすいイカ",       "normal", "ika"),
+  fishDef("shell",      "うたうかい",         "normal", "shell"),
+  fishDef("candy",      "キャンディフィッシュ", "normal", "candy"),
+  fishDef("leaf",       "このはフィッシュ",   "normal", "leaf"),
+  fishDef("cloud",      "くもフィッシュ",     "normal", "cloud"),
+  fishDef("kingyo",     "こがねキンギョ",     "rare", "rare_kingyo"),
+  fishDef("niji_masu",  "きらきらニジマス",   "rare", "rare_nijimasu"),
+  fishDef("ayu",        "ぎんいろアユ",       "rare", "rare_ayu"),
+  fishDef("hotaru",     "ほたるフィッシュ",   "rare", "hotaru"),
+  fishDef("tobiuo",     "あおぞらトビウオ",   "rare", "rare_tobiuo"),
+  fishDef("ishidai",    "しましまイシダイ",   "rare", "rare_ishidai"),
+  fishDef("fugu",       "さくらフグ",         "rare", "rare_fugu"),
+  fishDef("unagi",      "よぞらウナギ",       "rare", "rare_unagi"),
+  fishDef("moon",       "つきあかりフィッシュ", "rare", "moon"),
+  fishDef("sun",        "たいようフィッシュ", "rare", "sun"),
+  fishDef("snow",       "ゆきフィッシュ",     "rare", "snow"),
+  fishDef("manta",      "ほしぞらマンタ",     "legend", "super_manta"),
+  fishDef("kurage",     "ひかりクラゲ",       "legend", "super_kurage"),
+  fishDef("shark",      "ぎんがザメ",         "legend", "super_shark"),
+  fishDef("salmon",     "オーロラサケ",       "legend", "super_salmon"),
+  fishDef("koi_legend", "にじいろコイ",       "legend", "legend_koi"),
+  fishDef("tai_legend", "おうごんタイ",       "legend", "legend_tai"),
+  fishDef("coelacanth", "まぼろしシーラカンス", "legend", "legend_coelacanth"),
+  fishDef("maguro",     "おうじゃマグロ",     "legend", "legend_maguro"),
+  fishDef("star",       "ながれぼしフィッシュ", "legend", "star"),
+  fishDef("ryugu",      "りゅうぐうのつかい", "mythic", "legend_ryugu"),
+  fishDef("crystal",    "クリスタルフィッシュ", "mythic", "crystal"),
+  fishDef("rainbow",    "にじのぬし",         "mythic", "rainbow"),
+];
+const FISH_MAP = Object.fromEntries(FISHES.map((f) => [f.id, f]));
+
+// レアど: minLv = がっこうのクリアレベルが これいじょうで つれるようになる
+const RARITY_INFO = {
+  normal: { label: "ふつう",     stars: "⭐",       weight: 70, minLv: 0 },
+  rare:   { label: "めずらしい", stars: "⭐⭐",     weight: 21, minLv: 0 },
+  legend: { label: "でんせつ",   stars: "⭐⭐⭐",   weight: 7,  minLv: 10 },
+  mythic: { label: "きせき",     stars: "🌈⭐⭐⭐", weight: 2,  minLv: 20 },
+};
+
+// つりけん の もらいかた
+const TICKET_FIRST_CLEAR = 2;   // がっこう はじめてクリア
+const TICKET_PERFECT = 1;       // がっこう・タイピング ぜんもんせいかい
+const TICKET_QUEST = 1;         // おねがい たっせい
+const TICKET_MISSION = 1;       // きょうのミッション 1つ
+const MISSION_BONUS_COINS = 30; // ミッション ぜんぶ たっせい
+
+// きょうのミッション（まいにち 3つ えらばれる）
+const DAILY_MISSION_POOL = [
+  { id: "school", icon: "🏫", label: "がっこうで 1レベル クリアする" },
+  { id: "typing", icon: "⌨️", label: "タイピングで ぜんもんせいかい する" },
+  { id: "fish",   icon: "🎣", label: "さかなを 1ぴき つる" },
+  { id: "feed",   icon: "🍎", label: "だれかに たべものを あげる" },
+  { id: "quest",  icon: "📋", label: "おねがいを 1つ かなえる" },
+];
+
 // ---------- まちの建物 ----------
-const TOWN_W = 3580;
+const TOWN_W = 3980;
 const BUILDINGS = [
   { id: "myhome", x: 150,  w: 230, name: "じぶんのいえ", emoji: "🏠", wall: "#fff3e0", roof: "#4fc3f7", screen: "home" },
   { id: "school", x: 520,  w: 300, name: "がっこう",     emoji: "🏫", wall: "#ffecb3", roof: "#e57373", screen: "map" },
@@ -150,6 +221,8 @@ const BUILDINGS = [
 const FRIEND_HOUSE_X = [2120, 2320, 2520, 2720, 2920, 3120];
 // こうえん（ペットがあつまる）
 const PARK_X = 3350;
+// つりば（まちの いちばん みぎはし）
+const FISHING_X = 3640;
 
 // ---------- なかよしど（ハート） ----------
 const HEART_MAX = 10;

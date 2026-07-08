@@ -514,6 +514,115 @@ svg .av-leg, svg .av-arm { transform-box: fill-box; transform-origin: 50% 10%; }
   50% { transform: translateX(-50%) translateY(-22px); }
 }
 
+/* ---------- つりば ---------- */
+#screen-fishing { background: linear-gradient(180deg,#bde8ff,#e3f6ff); }
+.fishing-spot { bottom: 96px !important; }
+.mission-btn {
+  position: absolute; top: 10px; right: 10px; z-index: 40;
+  padding: 8px 14px; font-family: inherit; font-weight: 700; font-size: .82rem;
+  line-height: 1.3; color: var(--text); background: #fffde7;
+  border: 3px solid var(--yellow); border-radius: 16px; cursor: pointer;
+  box-shadow: var(--shadow); text-align: center;
+}
+.fishing-stage {
+  position: relative; max-width: 640px; height: min(46vh, 330px);
+  margin: 0 auto; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
+}
+.fs-sky { position: absolute; inset: 0; height: 40%; background: linear-gradient(180deg,#aee9ff,#d8f4ff); }
+.fs-water { position: absolute; left: 0; right: 0; bottom: 0; height: 60%;
+  background: linear-gradient(180deg,#4fc3f7,#0288d1); }
+.fs-wave { position: absolute; left: -10%; right: -10%; height: 12px; border-radius: 50%;
+  background: rgba(255,255,255,.35); animation: wave 5s ease-in-out infinite; }
+.fs-wave.w1 { top: 16%; }
+.fs-wave.w2 { top: 48%; animation-delay: -2.5s; }
+@keyframes wave { 0%,100% { transform: translateX(-14px); } 50% { transform: translateX(14px); } }
+.fs-pier { position: absolute; left: 0; bottom: 42%; width: 34%; height: 16px;
+  background: #a1887f; border-radius: 0 8px 8px 0; box-shadow: 0 4px 0 #8d6e63; }
+.fs-bobber {
+  position: absolute; left: 48%; top: 26%; font-size: 1.5rem;
+  transition: top .3s; animation: bobber-idle 2.2s ease-in-out infinite;
+}
+@keyframes bobber-idle { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+.waiting .fs-bobber { animation: bobber-idle 1.4s ease-in-out infinite; }
+.biting .fs-bobber { animation: bobber-bite .18s linear infinite; }
+@keyframes bobber-bite { 0%,100% { transform: translateY(0); } 50% { transform: translateY(12px); } }
+.fs-exclaim {
+  display: none; position: absolute; left: 46%; top: 4%; font-size: 3rem;
+  animation: pop .25s; filter: drop-shadow(0 2px 2px rgba(0,0,0,.3));
+}
+.biting .fs-exclaim { display: block; animation: bob .5s ease-in-out infinite; }
+.fs-splash { display: none; position: absolute; left: 45%; top: 18%; font-size: 3.4rem; }
+.splash .fs-splash { display: block; animation: pop .4s; }
+.splash .fs-bobber { display: none; }
+.fishing-msg { text-align: center; margin: 12px 0 0; font-size: 1.1rem; min-height: 1.6em; }
+.cast-btn { margin-top: 10px; }
+.cast-btn.bite-btn { background: #ef5350; box-shadow: 0 6px 0 #c62828; animation: pulse-btn .4s linear infinite; }
+@keyframes pulse-btn { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+.cast-btn:disabled { opacity: .75; }
+
+/* つりけっか */
+.fish-result {
+  position: fixed; inset: 0; z-index: 55; background: rgba(2,60,102,.5);
+  display: flex; align-items: center; justify-content: center;
+}
+.fr-card {
+  background: #fff; border-radius: 26px; box-shadow: var(--shadow);
+  padding: 24px; width: min(92%, 400px); text-align: center; animation: pop .35s;
+}
+.fish-result.rarity-legend .fr-card { background: linear-gradient(180deg,#fff8e1,#ffecb3); border: 5px solid #ffd54f; }
+.fish-result.rarity-mythic .fr-card {
+  border: 5px solid transparent;
+  background: linear-gradient(#fff,#fff) padding-box,
+    linear-gradient(45deg,#ff8a80,#ffd54f,#81c784,#4fc3f7,#b39ddb) border-box;
+}
+.fr-card img { width: 180px; height: 150px; object-fit: contain; }
+.fr-new { font-size: 1.3rem; font-weight: 900; color: #f57f17; animation: bob 1s ease-in-out infinite; }
+.fr-rarity { font-size: 1.1rem; margin: 4px 0; }
+.fr-count { color: #8d6e63; font-size: .98rem; }
+
+/* ---------- さかなずかん ---------- */
+#screen-zukan { background: linear-gradient(180deg,#e1f5fe,#fdf6e3); }
+.zukan-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px; max-width: 720px; margin: 0 auto; padding-bottom: 24px;
+}
+.zukan-cell {
+  background: var(--card); border-radius: 16px; box-shadow: var(--shadow);
+  padding: 10px 6px; text-align: center;
+}
+.zukan-cell img { width: 90px; height: 72px; object-fit: contain; }
+.zukan-cell .zk-shadow { filter: brightness(0) opacity(.35); }
+.zukan-cell .zk-name { font-size: .85rem; margin-top: 4px; }
+.zukan-cell .zk-sub { font-size: .75rem; color: #8d6e63; }
+.zukan-cell.rarity-legend { background: #fff8e1; }
+.zukan-cell.rarity-mythic { background: linear-gradient(135deg,#fff0f5,#e3f2fd); }
+.zukan-complete {
+  max-width: 720px; margin: 0 auto 12px; padding: 14px; text-align: center;
+  background: linear-gradient(90deg,#fff59d,#ffe082); border-radius: 16px;
+  font-size: 1.05rem; box-shadow: var(--shadow);
+}
+
+/* ---------- きょうのミッション ---------- */
+.mission-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.mission-item {
+  display: flex; align-items: center; gap: 10px; text-align: left;
+  background: #fafafa; border-radius: 14px; padding: 10px 14px; font-size: .98rem;
+}
+.mission-item.done { background: #f1f8e9; }
+.mission-item.done .mi-label { text-decoration: line-through; color: #9e9e9e; }
+.mission-item .mi-icon { font-size: 1.4rem; }
+.mission-note { font-size: .85rem; color: #8d6e63; margin-bottom: 10px; line-height: 1.7; }
+
+/* ---------- トースト ---------- */
+.toast {
+  position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%);
+  z-index: 70; background: rgba(93,64,55,.95); color: #fff;
+  padding: 12px 22px; border-radius: 999px; font-size: .95rem;
+  box-shadow: 0 4px 14px rgba(0,0,0,.3); max-width: 90%;
+  animation: toast-in .3s;
+}
+@keyframes toast-in { from { transform: translateX(-50%) translateY(20px); opacity: 0; } }
+
 /* ---------- 紙吹雪 ---------- */
 #confetti-layer { position: fixed; inset: 0; pointer-events: none; z-index: 50; overflow: hidden; }
 .confetti {

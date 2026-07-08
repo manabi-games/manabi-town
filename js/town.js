@@ -69,6 +69,22 @@ function emptyLotSVG(f) {
   </svg>`;
 }
 
+function fishingSpotSVG() {
+  return `<svg width="330" height="240" viewBox="0 0 330 240" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="185" cy="200" rx="145" ry="38" fill="#4fc3f7" opacity=".9"/>
+    <ellipse cx="185" cy="196" rx="130" ry="30" fill="#81d4fa"/>
+    <path d="M 90 190 Q 110 184 130 190 Q 150 196 170 190" stroke="#e1f5fe" stroke-width="4" fill="none" stroke-linecap="round" opacity=".8"/>
+    <path d="M 180 205 Q 200 199 220 205 Q 240 211 260 205" stroke="#e1f5fe" stroke-width="4" fill="none" stroke-linecap="round" opacity=".7"/>
+    <rect x="20" y="160" width="110" height="14" rx="6" fill="#a1887f"/>
+    <rect x="34" y="172" width="10" height="46" fill="#8d6e63"/>
+    <rect x="96" y="172" width="10" height="46" fill="#8d6e63"/>
+    <text x="250" y="170" font-size="34" text-anchor="middle">🐟</text>
+    <rect x="6" y="96" width="128" height="30" rx="9" fill="#fff" stroke="#e0d5c5" stroke-width="2"/>
+    <text x="70" y="117" font-size="16" font-weight="bold" text-anchor="middle" fill="#5d4037">🎣 つりば</text>
+    <rect x="62" y="126" width="8" height="36" fill="#8d6e63"/>
+  </svg>`;
+}
+
 function parkSVG() {
   return `<svg width="230" height="190" viewBox="0 0 230 190" xmlns="http://www.w3.org/2000/svg">
     <text x="40" y="120" font-size="64" text-anchor="middle">🌳</text>
@@ -168,6 +184,7 @@ function renderTownDynamic() {
         const qi = questInteract(f);
         if (qi) {
           npcTalk(npc, qi.text, friendVoice(f.id));
+          updateQuestChip();
           if (qi.completed) setTimeout(() => { assignQuestIfNeeded(); renderTownDynamic(); }, 4500);
         } else {
           npcTalk(npc, pick(f.lines), friendVoice(f.id));
@@ -184,6 +201,17 @@ function renderTownDynamic() {
   park.style.left = PARK_X + "px";
   park.innerHTML = parkSVG();
   dyn.appendChild(park);
+
+  // つりば
+  const spot = document.createElement("div");
+  spot.className = "town-building fishing-spot";
+  spot.style.left = FISHING_X + "px";
+  spot.innerHTML = fishingSpotSVG();
+  spot.addEventListener("click", (e) => {
+    e.stopPropagation();
+    walkToAndEnter({ id: "fishing", name: "つりば", emoji: "🎣", x: FISHING_X, w: 330, screen: "fishing", doorX: FISHING_X + 70 });
+  });
+  dyn.appendChild(spot);
 
   // ペット（こうえん の あたりを うろうろ）
   PETS.forEach((p, i) => {
@@ -202,7 +230,10 @@ function renderTownDynamic() {
   const rainbow = document.getElementById("town-rainbow");
   rainbow.classList.toggle("hidden", maxLv < 30);
 
-  // おねがいチップ
+  updateQuestChip();
+}
+
+function updateQuestChip() {
   const chip = document.getElementById("quest-chip");
   if (state.quest) {
     chip.textContent = questChipText(state.quest);
@@ -236,6 +267,7 @@ function petTalk(npcEl, p) {
     e.stopPropagation();
     state.foods[food.id]--;
     save();
+    dailyProgress("feed");
     soundCorrect();
     npcEl.classList.add("feed-bounce");
     setTimeout(() => npcEl.classList.remove("feed-bounce"), 1300);
@@ -247,6 +279,7 @@ function petTalk(npcEl, p) {
 // ---------- はいれる たてもの ----------
 function allDoors() {
   const doors = BUILDINGS.map((b) => ({ ...b, doorX: b.x + b.w / 2 }));
+  doors.push({ id: "fishing", name: "つりば", emoji: "🎣", x: FISHING_X, w: 330, screen: "fishing", doorX: FISHING_X + 70 });
   const maxLv = maxCleared();
   FRIENDS.forEach((f, i) => {
     if (f.unlockLv <= maxLv) {
@@ -402,6 +435,8 @@ function townTick(t) {
 // ---------- がめんひょうじ ----------
 function renderTownScreen() {
   if (!town.built) { buildTown(); setupTownControls(); }
+  ensureDaily();
+  checkLoginGift();
   assignQuestIfNeeded();
   // プレイヤーの みため こうしん
   town.playerEl.innerHTML = `<div class="npc-avatar">${renderAvatar(state.avatar)}</div><span class="npc-name player-name">${state.name}</span>`;

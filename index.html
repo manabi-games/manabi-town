@@ -52,8 +52,10 @@
     <div class="town-hud">
       <span id="hud-name"></span>
       <span>🪙 <span id="hud-coins">0</span></span>
+      <span>🎫 <span id="hud-tickets">0</span></span>
       <span>⭐ <span id="hud-stars">0</span></span>
     </div>
+    <button id="btn-missions" class="mission-btn">📝 きょうの<br>ミッション</button>
     <button id="btn-enter-door" class="enter-btn hidden">はいる</button>
     <div id="quest-chip" class="quest-chip hidden"></div>
     <div class="walk-controls">
@@ -194,6 +196,63 @@
   <div id="bakery-list" class="shop-list"></div>
 </div>
 
+<!-- ======== つりば ======== -->
+<div id="screen-fishing" class="screen">
+  <div class="statusbar">
+    <button class="small-btn btn-exit">🚪 まちにもどる</button>
+    <span class="status-title">🎣 つりば</span>
+    <span class="status-coin">🎫 <span id="fishing-tickets">0</span></span>
+    <button id="btn-open-zukan" class="small-btn">📖 ずかん <span id="fishing-zukan-count"></span></button>
+  </div>
+  <div id="fishing-stage" class="fishing-stage">
+    <div class="fs-sky"></div>
+    <div class="fs-water">
+      <div class="fs-wave w1"></div><div class="fs-wave w2"></div>
+      <div class="fs-bobber">🔴</div>
+      <div class="fs-splash">💦</div>
+      <div class="fs-exclaim">❗</div>
+    </div>
+    <div class="fs-pier"></div>
+  </div>
+  <p id="fishing-msg" class="fishing-msg"></p>
+  <button id="btn-cast" class="big-btn cast-btn">🎣 つりをする（🎫1まい）</button>
+
+  <div id="fish-result" class="fish-result hidden">
+    <div class="fr-card">
+      <div id="fr-new" class="fr-new hidden">✨ NEW! ✨</div>
+      <img id="fr-img" src="" alt="">
+      <h3 id="fr-name"></h3>
+      <div id="fr-rarity" class="fr-rarity"></div>
+      <div id="fr-count" class="fr-count"></div>
+      <button id="btn-fish-ok" class="big-btn">やったー！</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======== さかなずかん ======== -->
+<div id="screen-zukan" class="screen">
+  <div class="statusbar">
+    <button id="btn-zukan-back" class="small-btn">← つりばへ</button>
+    <span class="status-title">📖 さかなずかん</span>
+    <span id="zukan-progress" class="status-coin"></span>
+  </div>
+  <div id="zukan-complete" class="zukan-complete hidden">🏆 ずかん コンプリート！！ きみは でんせつの つりめいじんだ！！ 🏆</div>
+  <div id="zukan-grid" class="zukan-grid"></div>
+</div>
+
+<!-- ======== きょうのミッション ======== -->
+<div id="mission-overlay" class="picker-overlay hidden">
+  <div class="picker-card">
+    <h3>📝 きょうのミッション</h3>
+    <div id="mission-list" class="mission-list"></div>
+    <p class="mission-note">1つ たっせいするたびに 🎫1まい！<br>ぜんぶ たっせいで さらに 🪙30まい！</p>
+    <button id="btn-mission-close" class="small-btn">とじる</button>
+  </div>
+</div>
+
+<!-- ======== トースト通知 ======== -->
+<div id="toast" class="toast hidden"></div>
+
 <!-- ======== えらぶモーダル（たべもの・プレゼント） ======== -->
 <div id="picker-overlay" class="picker-overlay hidden">
   <div class="picker-card">
@@ -222,6 +281,7 @@
 <script src="js/avatar.js"></script>
 <script src="js/questions.js"></script>
 <script src="js/typing.js"></script>
+<script src="js/fishing.js"></script>
 <script src="js/town.js"></script>
 <script src="js/main.js"></script>
 </body>

@@ -179,8 +179,12 @@ function finishTypingQuiz() {
   let coinsEarned = 0;
   let unlockMsg = "";
 
+  let ticketsEarned = 0;
   if (perfect) {
     coinsEarned = COIN_TYPING_CLEAR;
+    ticketsEarned = TICKET_PERFECT;
+    state.tickets += ticketsEarned;
+    dailyProgress("typing");
     if (level === state.typing[course] && level < TYPING_MAX_LEVEL) {
       state.typing[course] = level + 1;
       unlockMsg = `レベル${level + 1}が ひらいた！`;
@@ -196,7 +200,9 @@ function finishTypingQuiz() {
   document.getElementById("result-title").textContent = perfect ? "パーフェクト！" : "もうすこし！";
   document.getElementById("result-stars").textContent = perfect ? "⭐⭐⭐" : "";
   document.getElementById("result-detail").textContent = `${QUESTIONS_PER_LEVEL}もん中 ${correct}もん せいかい！`;
-  document.getElementById("result-reward").textContent = coinsEarned ? `🪙 ${coinsEarned}コイン ゲット！` : "";
+  document.getElementById("result-reward").textContent = coinsEarned
+    ? `🪙${coinsEarned}コイン${ticketsEarned ? ` ＋ つりけん🎫${ticketsEarned}まい` : ""} ゲット！`
+    : "";
   document.getElementById("result-unlock").innerHTML =
     [unlockMsg, questMsg].filter(Boolean).join("<br>") || (perfect ? "" : "ぜんもん せいかいで つぎのレベルが ひらくよ");
   resultReturnScreen = "dojo";
