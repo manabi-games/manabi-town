@@ -21,6 +21,7 @@ function defaultState() {
     quest: null,                 // いまの おねがい
     tickets: 3,                  // つりけん（さいしょに 3まい プレゼント）
     fish: {},                    // つった さかな { fishId: かず }
+    fishPlace: "pond",           // いま えらんでいる つりばしょ
     daily: null,                 // きょうのミッション
     lastGift: null,              // ログインプレゼントを もらった ひ
   };
@@ -42,6 +43,7 @@ function load() {
         if (!("quest" in parsed)) parsed.quest = null;
         if (typeof parsed.tickets !== "number") parsed.tickets = 3;
         if (!parsed.fish) parsed.fish = {};
+        if (!parsed.fishPlace) parsed.fishPlace = "pond";
         if (!("daily" in parsed)) parsed.daily = null;
         if (!("lastGift" in parsed)) parsed.lastGift = null;
         // ふるい quest に fish しゅるいは ないので そのまま OK
@@ -479,6 +481,8 @@ function finishQuiz() {
         .forEach((p) => unlocks.push(`${p.icon} ペットの ${p.name}が こうえんに やってきた！`));
       const newItems = SHOP_ITEMS.filter((i) => i.unlockLv > before && i.unlockLv <= after);
       if (newItems.length) unlocks.push(`🛍️ おみせに あたらしい しなもの が ${newItems.length}こ ならんだ！`);
+      FISHING_PLACES.filter((p) => p.unlockLv > before && p.unlockLv <= after)
+        .forEach((p) => unlocks.push(`🎣 あたらしい つりばしょ「${p.name}」に いけるようになった！`));
     }
     const questMsg = questOnSchoolClear(def.lv);
     if (questMsg) unlocks.push(questMsg);
@@ -641,8 +645,10 @@ function assignQuestIfNeeded() {
   if (kind === "food") {
     state.quest = { friendId: f.id, kind, foodId: pick(FOODS).id, met: false, asked: false };
   } else if (kind === "fish") {
-    // つれる さかな（ふつう/めずらしい）から えらぶ
-    const target = pick(FISHES.filter((fs) => fs.rarity === "normal" || fs.rarity === "rare"));
+    // いける つりばしょの さかな（ふつう/めずらしい）から えらぶ
+    const okPlaces = FISHING_PLACES.filter((p) => p.unlockLv <= maxCleared()).map((p) => p.id);
+    const target = pick(FISHES.filter((fs) =>
+      okPlaces.includes(fs.place) && (fs.rarity === "normal" || fs.rarity === "rare")));
     state.quest = { friendId: f.id, kind, fishId: target.id, met: false, asked: false };
   } else if (kind === "school") {
     const next = Math.min(maxCleared() + 1, 30);

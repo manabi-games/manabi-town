@@ -5,10 +5,23 @@
 let fishingBusy = false;
 let fishingTimer = null;
 
+// ---------- つりばしょ ----------
+function unlockedPlaces() {
+  return FISHING_PLACES.filter((p) => p.unlockLv <= maxCleared());
+}
+function currentPlace() {
+  const p = PLACE_MAP[state.fishPlace];
+  return p && p.unlockLv <= maxCleared() ? p : FISHING_PLACES[0];
+}
+
 // ---------- ちゅうせん ----------
 function rollFish() {
   const maxLv = maxCleared();
-  const tiers = Object.entries(RARITY_INFO).filter(([, info]) => maxLv >= info.minLv);
+  const place = currentPlace();
+  const placeFish = FISHES.filter((f) => f.place === place.id);
+  // この ばしょに いて、レベルかいきんずみ の レアどだけで ちゅうせん
+  const tiers = Object.entries(RARITY_INFO).filter(([id, info]) =>
+    maxLv >= info.minLv && placeFish.some((f) => f.rarity === id));
   const totalW = tiers.reduce((s, [, i]) => s + i.weight, 0);
   let r = Math.random() * totalW;
   let rarity = tiers[0][0];
@@ -16,7 +29,7 @@ function rollFish() {
     r -= info.weight;
     if (r <= 0) { rarity = id; break; }
   }
-  return pick(FISHES.filter((f) => f.rarity === rarity));
+  return pick(placeFish.filter((f) => f.rarity === rarity));
 }
 
 // ---------- つり画面 ----------
@@ -25,7 +38,36 @@ function renderFishing() {
   document.getElementById("fishing-tickets").textContent = state.tickets;
   const caught = Object.keys(state.fish).length;
   document.getElementById("fishing-zukan-count").textContent = `${caught}/${FISHES.length}`;
+  renderPlaceTabs();
   resetFishingStage();
+}
+
+function renderPlaceTabs() {
+  const place = currentPlace();
+  state.fishPlace = place.id;
+  const tabs = document.getElementById("place-tabs");
+  tabs.innerHTML = "";
+  const maxLv = maxCleared();
+  FISHING_PLACES.forEach((p) => {
+    const unlocked = p.unlockLv <= maxLv;
+    const b = document.createElement("button");
+    b.className = "tab-btn place-tab" + (p.id === place.id ? " selected" : "") + (unlocked ? "" : " locked");
+    b.innerHTML = unlocked ? p.name : `🔒 がっこうLv${p.unlockLv}`;
+    if (unlocked) b.addEventListener("click", () => {
+      if (fishingBusy) return;
+      state.fishPlace = p.id;
+      save();
+      renderFishing();
+      speak(`${p.name}に きたよ！`);
+    });
+    tabs.appendChild(b);
+  });
+  // はいけい と せつめい
+  document.getElementById("fishing-stage").style.backgroundImage = `url('${place.img}')`;
+  const placeFish = FISHES.filter((f) => f.place === place.id);
+  const placeCaught = placeFish.filter((f) => state.fish[f.id]).length;
+  document.getElementById("place-desc").textContent =
+    `${place.desc}　🐟ここのさかな: ${placeCaught}/${placeFish.length}`;
 }
 
 function resetFishingStage() {
@@ -121,15 +163,34 @@ function renderZukan() {
   const grid = document.getElementById("zukan-grid");
   grid.innerHTML = "";
   const order = { normal: 0, rare: 1, legend: 2, mythic: 3 };
-  [...FISHES].sort((a, b) => order[a.rarity] - order[b.rarity]).forEach((f) => {
-    const count = state.fish[f.id] || 0;
-    const info = RARITY_INFO[f.rarity];
-    const div = document.createElement("div");
-    div.className = "zukan-cell" + (count ? " caught rarity-" + f.rarity : "");
-    div.innerHTML = count
-      ? `<img src="${f.img}" alt=""><div class="zk-name">${f.name}</div><div class="zk-sub">${info.stars}　×${count}</div>`
-      : `<img src="${f.img}" alt="" class="zk-shadow"><div class="zk-name">？？？</div><div class="zk-sub">${info.stars}</div>`;
-    grid.appendChild(div);
+  const maxLv = maxCleared();
+
+  FISHING_PLACES.forEach((place) => {
+    const placeFish = FISHES.filter((f) => f.place === place.id)
+      .sort((a, b) => order[a.rarity] - order[b.rarity]);
+    const placeCaught = placeFish.filter((f) => state.fish[f.id]).length;
+    const unlocked = place.unlockLv <= maxLv;
+
+    const header = document.createElement("div");
+    header.className = "zukan-place";
+    header.textContent = unlocked
+      ? `🎣 ${place.name}（${placeCaught}/${placeFish.length}）`
+      : `🔒 ？？？（がっこうレベル${place.unlockLv}で いけるようになる）`;
+    grid.appendChild(header);
+
+    const section = document.createElement("div");
+    section.className = "zukan-section";
+    placeFish.forEach((f) => {
+      const count = state.fish[f.id] || 0;
+      const info = RARITY_INFO[f.rarity];
+      const div = document.createElement("div");
+      div.className = "zukan-cell" + (count ? " caught rarity-" + f.rarity : "");
+      div.innerHTML = count
+        ? `<img src="${f.img}" alt=""><div class="zk-name">${f.name}</div><div class="zk-sub">${info.stars}　×${count}</div>`
+        : `<img src="${f.img}" alt="" class="zk-shadow"><div class="zk-name">？？？</div><div class="zk-sub">${info.stars}</div>`;
+      section.appendChild(div);
+    });
+    grid.appendChild(section);
   });
   // コンプリート！
   document.getElementById("zukan-complete").classList.toggle("hidden", caught < FISHES.length);

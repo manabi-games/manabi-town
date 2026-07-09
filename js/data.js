@@ -138,49 +138,63 @@ const PNG_HAIRS = [
 const PNG_HAIR_MAP = Object.fromEntries(PNG_HAIRS.map((p) => [p.id, p]));
 
 // ---------- つり ----------
-// さかなデータは「つりじま」から移植（名前・レアどは原作準拠）
-const fishDef = (id, name, rarity, img) => ({ id, name, rarity, img: `assets/fish/${img}.png` });
+// さかな・つりばしょ は「つりじま」から移植（名前・レアど・せいそくち は原作準拠）
+const FISHING_PLACES = [
+  { id: "pond",    name: "はじまりのいけ",   img: "assets/stages/stage_pond.webp",    unlockLv: 0,  desc: "みどりに かこまれた しずかな いけ" },
+  { id: "river",   name: "きらきらがわ",     img: "assets/stages/stage_river.webp",   unlockLv: 6,  desc: "ながれる ひかりの かわ" },
+  { id: "coast",   name: "あおぞらかいがん", img: "assets/stages/stage_coast.webp",   unlockLv: 12, desc: "なみと すなはまの うみ" },
+  { id: "deep",    name: "ふしぎしんかい",   img: "assets/stages/stage_deep.webp",    unlockLv: 18, desc: "くらい うみのそこ" },
+  { id: "phantom", name: "まぼろしじま",     img: "assets/stages/stage_phantom.webp", unlockLv: 24, desc: "にじの ひみつばしょ" },
+];
+const PLACE_MAP = Object.fromEntries(FISHING_PLACES.map((p) => [p.id, p]));
+
+const fishDef = (id, name, rarity, place, img) => ({ id, name, rarity, place, img: `assets/fish/${img}.png` });
 const FISHES = [
-  fishDef("medaka",     "ひかりメダカ",       "normal", "medaka"),
-  fishDef("funna",      "まるフナ",           "normal", "funna"),
-  fishDef("tanago",     "ももタナゴ",         "normal", "tanago"),
-  fishDef("dojo",       "にょろドジョウ",     "normal", "dojo"),
-  fishDef("koi_baby",   "こいこいコイ",       "normal", "koi_baby"),
-  fishDef("yamame",     "しまヤマメ",         "normal", "yamame"),
-  fishDef("hasu",       "はねハス",           "normal", "hasu"),
-  fishDef("kawaebi",    "ぴょんエビ",         "normal", "kawaebi"),
-  fishDef("iwashi",     "きらめきイワシ",     "normal", "iwashi"),
-  fishDef("aji",        "はやてアジ",         "normal", "aji"),
-  fishDef("tai_small",  "こだいタイ",         "normal", "tai_small"),
-  fishDef("ankou",      "ランプアンコウ",     "normal", "ankou"),
-  fishDef("ika",        "すいすいイカ",       "normal", "ika"),
-  fishDef("shell",      "うたうかい",         "normal", "shell"),
-  fishDef("candy",      "キャンディフィッシュ", "normal", "candy"),
-  fishDef("leaf",       "このはフィッシュ",   "normal", "leaf"),
-  fishDef("cloud",      "くもフィッシュ",     "normal", "cloud"),
-  fishDef("kingyo",     "こがねキンギョ",     "rare", "rare_kingyo"),
-  fishDef("niji_masu",  "きらきらニジマス",   "rare", "rare_nijimasu"),
-  fishDef("ayu",        "ぎんいろアユ",       "rare", "rare_ayu"),
-  fishDef("hotaru",     "ほたるフィッシュ",   "rare", "hotaru"),
-  fishDef("tobiuo",     "あおぞらトビウオ",   "rare", "rare_tobiuo"),
-  fishDef("ishidai",    "しましまイシダイ",   "rare", "rare_ishidai"),
-  fishDef("fugu",       "さくらフグ",         "rare", "rare_fugu"),
-  fishDef("unagi",      "よぞらウナギ",       "rare", "rare_unagi"),
-  fishDef("moon",       "つきあかりフィッシュ", "rare", "moon"),
-  fishDef("sun",        "たいようフィッシュ", "rare", "sun"),
-  fishDef("snow",       "ゆきフィッシュ",     "rare", "snow"),
-  fishDef("manta",      "ほしぞらマンタ",     "legend", "super_manta"),
-  fishDef("kurage",     "ひかりクラゲ",       "legend", "super_kurage"),
-  fishDef("shark",      "ぎんがザメ",         "legend", "super_shark"),
-  fishDef("salmon",     "オーロラサケ",       "legend", "super_salmon"),
-  fishDef("koi_legend", "にじいろコイ",       "legend", "legend_koi"),
-  fishDef("tai_legend", "おうごんタイ",       "legend", "legend_tai"),
-  fishDef("coelacanth", "まぼろしシーラカンス", "legend", "legend_coelacanth"),
-  fishDef("maguro",     "おうじゃマグロ",     "legend", "legend_maguro"),
-  fishDef("star",       "ながれぼしフィッシュ", "legend", "star"),
-  fishDef("ryugu",      "りゅうぐうのつかい", "mythic", "legend_ryugu"),
-  fishDef("crystal",    "クリスタルフィッシュ", "mythic", "crystal"),
-  fishDef("rainbow",    "にじのぬし",         "mythic", "rainbow"),
+  // はじまりのいけ
+  fishDef("medaka",     "ひかりメダカ",       "normal", "pond", "medaka"),
+  fishDef("funna",      "まるフナ",           "normal", "pond", "funna"),
+  fishDef("tanago",     "ももタナゴ",         "normal", "pond", "tanago"),
+  fishDef("dojo",       "にょろドジョウ",     "normal", "pond", "dojo"),
+  fishDef("koi_baby",   "こいこいコイ",       "normal", "pond", "koi_baby"),
+  fishDef("candy",      "キャンディフィッシュ", "normal", "pond", "candy"),
+  fishDef("kingyo",     "こがねキンギョ",     "rare",   "pond", "rare_kingyo"),
+  // きらきらがわ
+  fishDef("yamame",     "しまヤマメ",         "normal", "river", "yamame"),
+  fishDef("hasu",       "はねハス",           "normal", "river", "hasu"),
+  fishDef("kawaebi",    "ぴょんエビ",         "normal", "river", "kawaebi"),
+  fishDef("leaf",       "このはフィッシュ",   "normal", "river", "leaf"),
+  fishDef("niji_masu",  "きらきらニジマス",   "rare",   "river", "rare_nijimasu"),
+  fishDef("ayu",        "ぎんいろアユ",       "rare",   "river", "rare_ayu"),
+  fishDef("hotaru",     "ほたるフィッシュ",   "rare",   "river", "hotaru"),
+  // あおぞらかいがん
+  fishDef("iwashi",     "きらめきイワシ",     "normal", "coast", "iwashi"),
+  fishDef("aji",        "はやてアジ",         "normal", "coast", "aji"),
+  fishDef("tai_small",  "こだいタイ",         "normal", "coast", "tai_small"),
+  fishDef("cloud",      "くもフィッシュ",     "normal", "coast", "cloud"),
+  fishDef("tobiuo",     "あおぞらトビウオ",   "rare",   "coast", "rare_tobiuo"),
+  fishDef("ishidai",    "しましまイシダイ",   "rare",   "coast", "rare_ishidai"),
+  fishDef("fugu",       "さくらフグ",         "rare",   "coast", "rare_fugu"),
+  fishDef("manta",      "ほしぞらマンタ",     "legend", "coast", "super_manta"),
+  // ふしぎしんかい
+  fishDef("ankou",      "ランプアンコウ",     "normal", "deep", "ankou"),
+  fishDef("ika",        "すいすいイカ",       "normal", "deep", "ika"),
+  fishDef("shell",      "うたうかい",         "normal", "deep", "shell"),
+  fishDef("unagi",      "よぞらウナギ",       "rare",   "deep", "rare_unagi"),
+  fishDef("snow",       "ゆきフィッシュ",     "rare",   "deep", "snow"),
+  fishDef("kurage",     "ひかりクラゲ",       "legend", "deep", "super_kurage"),
+  fishDef("shark",      "ぎんがザメ",         "legend", "deep", "super_shark"),
+  fishDef("salmon",     "オーロラサケ",       "legend", "deep", "super_salmon"),
+  // まぼろしじま
+  fishDef("moon",       "つきあかりフィッシュ", "rare", "phantom", "moon"),
+  fishDef("sun",        "たいようフィッシュ", "rare",   "phantom", "sun"),
+  fishDef("koi_legend", "にじいろコイ",       "legend", "phantom", "legend_koi"),
+  fishDef("tai_legend", "おうごんタイ",       "legend", "phantom", "legend_tai"),
+  fishDef("coelacanth", "まぼろしシーラカンス", "legend", "phantom", "legend_coelacanth"),
+  fishDef("maguro",     "おうじゃマグロ",     "legend", "phantom", "legend_maguro"),
+  fishDef("star",       "ながれぼしフィッシュ", "legend", "phantom", "star"),
+  fishDef("ryugu",      "りゅうぐうのつかい", "mythic", "phantom", "legend_ryugu"),
+  fishDef("crystal",    "クリスタルフィッシュ", "mythic", "phantom", "crystal"),
+  fishDef("rainbow",    "にじのぬし",         "mythic", "phantom", "rainbow"),
 ];
 const FISH_MAP = Object.fromEntries(FISHES.map((f) => [f.id, f]));
 
