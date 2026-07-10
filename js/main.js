@@ -113,6 +113,23 @@ function speak(text, voice, lang) {
 const friendVoice = (fid) => FRIEND_EXTRAS[fid]?.voice;
 const PET_VOICE = { pitch: 1.8, rate: 1.2 };
 
+// つづけて よみあげる（にほんご と えいごを まぜられる）
+// seq: [{ t: テキスト, l: "ja" | "en" }]
+function speakSeq(seq) {
+  try {
+    speechSynthesis.cancel();
+    seq.forEach((item) => {
+      const en = item.l === "en";
+      const clean = en ? String(item.t).trim() : stripForSpeech(item.t);
+      if (!clean) return;
+      const u = new SpeechSynthesisUtterance(clean);
+      u.lang = en ? "en-US" : "ja-JP";
+      u.rate = en ? 0.75 : 0.9; // えいごは ゆっくり
+      speechSynthesis.speak(u); // cancel せずに キューに ならべる
+    });
+  } catch (e) { /* よみあげ ひたいおう */ }
+}
+
 // ---------- 画面遷移 ----------
 const $ = (id) => document.getElementById(id);
 
@@ -404,12 +421,26 @@ function renderQuestion() {
   q.choices.forEach((c, i) => {
     const btn = document.createElement("button");
     btn.className = "choice-btn";
-    btn.textContent = c;
+    if (q.choiceLang === "en") {
+      // よめない えいたんご よう: 🔊で その たんごだけ よみあげ（こたえには ならない）
+      const sp = document.createElement("span");
+      sp.className = "choice-speak";
+      sp.textContent = "🔊";
+      sp.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (!quiz.locked) speak(c, null, "en-US");
+      });
+      btn.appendChild(sp);
+      btn.appendChild(document.createTextNode(c));
+    } else {
+      btn.textContent = c;
+    }
     btn.addEventListener("click", () => answerQuestion(i, btn));
     box.appendChild(btn);
   });
   quiz.locked = false;
-  speak(q.speak);
+  if (q.speakSeq) speakSeq(q.speakSeq);
+  else speak(q.speak);
 }
 
 function answerQuestion(i, btn) {
@@ -445,7 +476,10 @@ $("btn-quiz-quit").addEventListener("click", () => {
   showScreen("map");
 });
 $("btn-speak").addEventListener("click", () => {
-  if (quiz) speak(quiz.questions[quiz.index].speak);
+  if (!quiz) return;
+  const q = quiz.questions[quiz.index];
+  if (q.speakSeq) speakSeq(q.speakSeq);
+  else speak(q.speak);
 });
 
 // ---------- けっか ----------

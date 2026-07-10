@@ -327,6 +327,18 @@ svg .av-leg, svg .av-arm { transform-box: fill-box; transform-origin: 50% 10%; }
   transition: transform .08s;
 }
 .choice-btn:active { transform: scale(.96); }
+.choice-speak {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; margin-right: 10px; vertical-align: middle;
+  background: var(--yellow); border-radius: 50%; font-size: 1.15rem;
+  box-shadow: 0 3px 0 #f9a825; cursor: pointer;
+}
+.choice-speak:active { transform: translateY(2px); box-shadow: 0 1px 0 #f9a825; }
+.visual-speak {
+  width: 52px; height: 52px; border-radius: 50%; border: none; vertical-align: middle;
+  background: var(--yellow); font-size: 1.5rem; cursor: pointer;
+  box-shadow: 0 3px 0 #f9a825; margin-left: 8px;
+}
 .choice-btn.correct { background: #dcedc8; border-color: var(--green); }
 .choice-btn.wrong { background: #ffcdd2; border-color: #e57373; }
 .choice-btn:disabled { cursor: default; }

@@ -322,6 +322,9 @@ function qEngPic() {
     visual: `<span class="big-glyph">${target.e}</span>`,
     choices, answer,
     sayEn: target.en,
+    choiceLang: "en",
+    // もんだいぶん の あとに せんたくしを じゅんばんに よみあげる
+    speakSeq: [{ t: `${target.ja}は えいごで どれかな？`, l: "ja" }, ...choices.map((c) => ({ t: c, l: "en" }))],
   };
 }
 function qEngJa2En() {
@@ -334,6 +337,8 @@ function qEngJa2En() {
     visual: "",
     choices, answer,
     sayEn: target.en,
+    choiceLang: "en",
+    speakSeq: [{ t: `${target.ja}は えいごで どれかな？`, l: "ja" }, ...choices.map((c) => ({ t: c, l: "en" }))],
   };
 }
 function qEngEn2Ja() {
@@ -343,9 +348,10 @@ function qEngEn2Ja() {
   return {
     text: `「${target.en}」は どれかな？`,
     speak: `${target.kana}は どれかな？`,
-    visual: `<span style="font-size:2.6rem;font-weight:900">${target.en}</span>`,
+    visual: `<span style="font-size:2.6rem;font-weight:900">${target.en}</span> <button class="visual-speak" onclick="event.stopPropagation();speak('${target.en}',null,'en-US')">🔊</button>`,
     choices, answer,
     sayEn: target.en,
+    speakSeq: [{ t: target.en, l: "en" }, { t: "は どれかな？", l: "ja" }],
   };
 }
 
