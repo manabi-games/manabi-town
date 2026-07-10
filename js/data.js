@@ -104,7 +104,19 @@ const FRIENDS = [
     lines: ["いらっしゃい！ケーキ やいたの🍰", "ひきざんも できるの？てんさい！", "タイピング って かっこいいよね⌨️", "また あそぼうね！"] },
   { id: "f6", name: "ルナちゃん", unlockLv: 28, houseColor: "#e8b04b",
     avatar: { skin: 3, hairStyle: "ponytail", hairColor: 3, eyes: "star", mouth: "smile", shirt: "#e8b04b" },
-    lines: ["まちの みんなが きみの うわさを してるよ", "もうすぐ ぜんぶ クリアだね！", "きみは まちの ヒーローだよ✨", "わたしの いえに ようこそ！"] },
+    lines: ["まちの みんなが きみの うわさを してるよ", "もうすぐ だい6しょう クリアだね！", "きみは まちの ヒーローだよ✨", "わたしの いえに ようこそ！"] },
+  { id: "f7", name: "ゆきちゃん", unlockLv: 32, houseColor: "#90caf9",
+    avatar: { skin: 0, hairStyle: "png_h03", hairColor: 1, eyes: "sleepy", mouth: "smile", shirt: "#90caf9" },
+    lines: ["ゆきみたいに きれいだよね", "アイスは さいこう", "あしたも あそびに きてね", "こおりのくにに いってみたいな"] },
+  { id: "f8", name: "だいちくん", unlockLv: 38, houseColor: "#66bb6a",
+    avatar: { skin: 2, hairStyle: "spiky", hairColor: 2, eyes: "round", mouth: "open", shirt: "#66bb6a" },
+    lines: ["きょうりゅうって つよいのだ！ガオー！", "これ きょうりゅうの ほねなのだ。みてみて！", "きょうりゅうはかせは いつも げんきなのだ！", "かっこいい ほんを よんだのだ"] },
+  { id: "f9", name: "みおちゃん", unlockLv: 44, houseColor: "#4dd0e1",
+    avatar: { skin: 1, hairStyle: "png_h05", hairColor: 0, eyes: "happy", mouth: "cat", shirt: "#4dd0e1" },
+    lines: ["さかなって いっぱい いるんだ〜", "すいぞくかん だいすき〜", "さかなを みてると たのしいな〜", "つり また しようよ〜"] },
+  { id: "f10", name: "レオくん", unlockLv: 48, houseColor: "#ff7043",
+    avatar: { skin: 0, hairStyle: "png_h07", hairColor: 3, eyes: "star", mouth: "open", shirt: "#ff7043" },
+    lines: ["えいごって たのしいよ。きみも やってみるかい？", "ハロー！きょうも いいてんきだね", "えいごで はなすと かっこいいでしょ？", "また えいごのゲーム しようぜ。グッジョブ！"] },
 ];
 
 // ---------- ペット ----------
@@ -223,7 +235,7 @@ const DAILY_MISSION_POOL = [
 ];
 
 // ---------- まちの建物 ----------
-const TOWN_W = 3980;
+const TOWN_W = 4820;
 const BUILDINGS = [
   { id: "myhome", x: 150,  w: 230, name: "じぶんのいえ", emoji: "🏠", wall: "#fff3e0", roof: "#4fc3f7", screen: "home" },
   { id: "school", x: 520,  w: 300, name: "がっこう",     emoji: "🏫", wall: "#ffecb3", roof: "#e57373", screen: "map" },
@@ -232,22 +244,22 @@ const BUILDINGS = [
   { id: "shop",   x: 1720, w: 260, name: "おみせ",       emoji: "🛍️", wall: "#fff8e1", roof: "#ffa726", screen: "shop", awning: true },
 ];
 // トモダチの家（unlockLvで出現）
-const FRIEND_HOUSE_X = [2120, 2320, 2520, 2720, 2920, 3120];
+const FRIEND_HOUSE_X = [2120, 2320, 2520, 2720, 2920, 3120, 3620, 3820, 4020, 4220];
 // こうえん（ペットがあつまる）
 const PARK_X = 3350;
 // つりば（まちの いちばん みぎはし）
-const FISHING_X = 3640;
+const FISHING_X = 4460;
 
 // ---------- なかよしど（ハート） ----------
-const HEART_MAX = 10;
+const HEART_MAX = 20;
 const HEART_TITLES = [
-  { min: 10, title: "しんゆう💖" },
-  { min: 6,  title: "なかよし💕" },
-  { min: 3,  title: "ともだち💗" },
+  { min: 20, title: "しんゆう💖" },
+  { min: 12, title: "なかよし💕" },
+  { min: 5,  title: "ともだち💗" },
   { min: 0,  title: "しりあい🤍" },
 ];
 const QUEST_REWARD_COINS = 15;
-const HEART_GIFT_LEVELS = [3, 6, 10]; // ここに とうたつすると トモダチから プレゼント
+const HEART_GIFT_LEVELS = [5, 12, 20]; // ここに とうたつすると トモダチから プレゼント
 
 // ---------- たべもの ----------
 const FOODS = [
@@ -330,6 +342,50 @@ const FRIEND_EXTRAS = {
   },
 };
 
+// あたらしいトモダチ 4人の こせい
+Object.assign(FRIEND_EXTRAS, {
+  f7: {
+    voice: { pitch: 1.3, rate: 0.92 },
+    favFood: "food_icecream", badFood: "food_strawberry",
+    foodLove: "アイスだ。……さいこうだね。ありがとう",
+    foodOk: "ありがとう。たべるね",
+    foodBad: "いちごは つめたくないから にがて…でも きもちは うれしいよ",
+    giftThanks: ["プレゼント？うれしいな。ありがとうね", "そっか。だいじにするね"],
+    questThanks: ["たすかった。ありがとうね", "さすがだね。きみは いいひとだ"],
+    remind: "おねがい、まだかな…まってるね",
+  },
+  f8: {
+    voice: { pitch: 0.65, rate: 1.08 },
+    favFood: "food_watermelon", badFood: "food_chocolate",
+    foodLove: "すいかだ！！きょうりゅうも だいすきな たべものなのだ！ガオー！",
+    foodOk: "ありがとうなのだ！はかせは よろこんでいるのだ",
+    foodBad: "チョコは てが ベタベタして ほねが さわれなくなるのだ…でも ありがとうなのだ",
+    giftThanks: ["もらったのだ！きょうりゅうより うれしいのだ！", "ありがとうなのだ！ガオー！"],
+    questThanks: ["おかげで たいせつな けんきゅうが できたのだ！ガオー！", "きみは えらいのだ。また たのむのだ！"],
+    remind: "れいの おねがい、まだなのだ。たのんだのだ！ガオー！",
+  },
+  f9: {
+    voice: { pitch: 1.55, rate: 0.87 },
+    favFood: "food_apple", badFood: "food_donut",
+    foodLove: "りんご？やった〜。さかなみたいに ぴちぴちに なっちゃう〜",
+    foodOk: "ありがとう〜。たべるね〜",
+    foodBad: "ドーナツは あなが あいてて にげられそう〜…でも ありがとう〜",
+    giftThanks: ["わあ〜。ありがとう〜。たからもの〜", "うれしいな〜。だいじにするね〜"],
+    questThanks: ["ありがとう〜。さかなも よろこんでたよ〜", "たすかった〜。また つりに いこっか〜"],
+    remind: "あのおねがい、まだ〜？まってるよ〜",
+  },
+  f10: {
+    voice: { pitch: 1.1, rate: 1.0 },
+    favFood: "food_cake", badFood: "food_candy",
+    foodLove: "グレート！ケーキだ！さいこうの プレゼント。グッジョブ！",
+    foodOk: "サンキュー！ベリー おいしい！",
+    foodBad: "オー、ノー…あめは ちょっと…でも サンキュー！",
+    giftThanks: ["アメージング！ありがとう！", "グッジョブ！きみは すごいやつだ"],
+    questThanks: ["ヘルプしてくれて ベリーサンキュー！", "グレート！きみの おかげで ビッグスマイルだ！"],
+    remind: "ハロー！れいの おねがい、まだかな？",
+  },
+});
+
 // ---------- ペットに ごはんを あげたとき ----------
 const PET_FEED_LINES = {
   p1:  ["ワンワン！！おいしいー！🐕", "しっぽ ぶんぶん！ありがとう！"],
@@ -377,6 +433,48 @@ const KANJI_BASIC = [
 ];
 const COUNT_EMOJIS = ["🍎", "🍓", "🐟", "🌸", "⭐", "🐣", "🍬", "🎈", "🐞", "🍩"];
 
+// ---------- えいごたんご ----------
+const ENGLISH_WORDS = [
+  { e: "🐶", en: "dog",      kana: "ドッグ",       ja: "いぬ" },
+  { e: "🐱", en: "cat",      kana: "キャット",     ja: "ねこ" },
+  { e: "🐻", en: "bear",     kana: "ベア",         ja: "くま" },
+  { e: "🦊", en: "fox",      kana: "フォックス",   ja: "きつね" },
+  { e: "🐰", en: "rabbit",   kana: "ラビット",     ja: "うさぎ" },
+  { e: "🦁", en: "lion",     kana: "ライオン",     ja: "らいおん" },
+  { e: "🐟", en: "fish",     kana: "フィッシュ",   ja: "さかな" },
+  { e: "🐘", en: "elephant", kana: "エレファント", ja: "ぞう" },
+  { e: "🍎", en: "apple",    kana: "アップル",     ja: "りんご" },
+  { e: "🍌", en: "banana",   kana: "バナナ",       ja: "ばなな" },
+  { e: "🍊", en: "orange",   kana: "オレンジ",     ja: "みかん" },
+  { e: "🍇", en: "grape",    kana: "グレープ",     ja: "ぶどう" },
+  { e: "🍰", en: "cake",     kana: "ケーキ",       ja: "ケーキ" },
+  { e: "🥛", en: "milk",     kana: "ミルク",       ja: "ぎゅうにゅう" },
+  { e: "🍬", en: "candy",    kana: "キャンディ",   ja: "あめ" },
+  { e: "🍩", en: "donut",    kana: "ドーナツ",     ja: "ドーナツ" },
+  { e: "🔴", en: "red",      kana: "レッド",       ja: "あか" },
+  { e: "🔵", en: "blue",     kana: "ブルー",       ja: "あお" },
+  { e: "🟡", en: "yellow",   kana: "イエロー",     ja: "きいろ" },
+  { e: "🟢", en: "green",    kana: "グリーン",     ja: "みどり" },
+  { e: "⭐", en: "star",     kana: "スター",       ja: "ほし" },
+  { e: "🌙", en: "moon",     kana: "ムーン",       ja: "つき" },
+  { e: "☀️", en: "sun",      kana: "サン",         ja: "たいよう" },
+  { e: "🌸", en: "flower",   kana: "フラワー",     ja: "はな" },
+];
+
+// ---------- 1ねんせいの かんじ だい2だん ----------
+const KANJI_BASIC2 = [
+  { k: "人", y: "ひと",   e: "🧍" }, { k: "子", y: "こ",     e: "👶" },
+  { k: "男", y: "おとこ", e: "👦" }, { k: "女", y: "おんな", e: "👧" },
+  { k: "上", y: "うえ",   e: "⬆️" }, { k: "下", y: "した",   e: "⬇️" },
+  { k: "中", y: "なか",   e: "🎯" }, { k: "右", y: "みぎ",   e: "➡️" },
+  { k: "左", y: "ひだり", e: "⬅️" }, { k: "白", y: "しろ",   e: "⚪" },
+  { k: "赤", y: "あか",   e: "🔴" }, { k: "青", y: "あお",   e: "🔵" },
+  { k: "本", y: "ほん",   e: "📖" }, { k: "竹", y: "たけ",   e: "🎋" },
+  { k: "林", y: "はやし", e: "🌲" }, { k: "町", y: "まち",   e: "🏘️" },
+  { k: "村", y: "むら",   e: "🏞️" }, { k: "力", y: "ちから", e: "💪" },
+  { k: "耳", y: "みみ",   e: "👂" }, { k: "玉", y: "たま",   e: "🔮" },
+];
+
 const STORY_TEMPLATES = [
   { t: (a, b) => `りんごが ${a}こ、みかんが ${b}こ あります。あわせて なんこ？`, op: "add" },
   { t: (a, b) => `こうえんに こどもが ${a}にん います。${b}にん きました。ぜんぶで なんにん？`, op: "add" },
@@ -417,6 +515,32 @@ const LEVELS = [
   { lv: 28, title: "けいさんマスター",   cats: ["addCarry", "subBorrow"] },
   { lv: 29, title: "かんじマスター",     cats: ["kanjiRead", "kanjiPick", "kanjiCount"] },
   { lv: 30, title: "さいしゅうテスト！", cats: ["addCarry", "subBorrow", "kanjiRead", "clockHalf", "story_add"] },
+  // だい7しょう: えいごにちょうせん (Lv31-35)
+  { lv: 31, title: "えいご①どうぶつ",   cats: ["engPic"] },
+  { lv: 32, title: "えいご②たべもの",   cats: ["engPic", "engJa2En"] },
+  { lv: 33, title: "3つのかずのけいさん", cats: ["add3"] },
+  { lv: 34, title: "えいご③よめるかな", cats: ["engEn2Ja"] },
+  { lv: 35, title: "けいさんのおうよう", cats: ["add3", "mix3"] },
+  // だい8しょう: おおきなかずマスター (Lv36-40)
+  { lv: 36, title: "なんじゅうのけいさん", cats: ["tensCalc"] },
+  { lv: 37, title: "2けたのたしざん",   cats: ["add2d1d"] },
+  { lv: 38, title: "えいご④いろいろ",   cats: ["engJa2En", "engEn2Ja"] },
+  { lv: 39, title: "とけい③15ふん",     cats: ["clockQuarter"] },
+  { lv: 40, title: "ぶんしょうだい②",   cats: ["story3", "story_sub"] },
+  // だい9しょう: かんじはかせ (Lv41-45)
+  { lv: 41, title: "かんじ④",           cats: ["kanjiRead2"] },
+  { lv: 42, title: "えいご⑤マスター",   cats: ["engPic", "engEn2Ja", "engJa2En"] },
+  { lv: 43, title: "けいさんミックス",   cats: ["add2d1d", "tensCalc", "mix3"] },
+  { lv: 44, title: "かんじ⑤",           cats: ["kanjiRead2", "kanjiPick2"] },
+  { lv: 45, title: "100までのけいさん", cats: ["add100", "tensCalc", "seq100"] },
+  // だい10しょう: でんせつのテスト (Lv46-50)
+  { lv: 46, title: "そうふくしゅう①",   cats: ["addCarry", "subBorrow", "kanjiRead", "clockHalf"] },
+  { lv: 47, title: "えいごチャンピオン", cats: ["engPic", "engJa2En", "engEn2Ja"] },
+  { lv: 48, title: "けいさんチャンピオン", cats: ["add3", "add2d1d", "mix3", "tensCalc"] },
+  { lv: 49, title: "そうふくしゅう②",   cats: ["kanjiRead2", "engEn2Ja", "clockQuarter", "story3"] },
+  { lv: 50, title: "でんせつのさいしゅうテスト！！",
+    cats: ["addCarry", "subBorrow", "kanjiRead2", "clockQuarter", "engJa2En", "engEn2Ja", "add2d1d", "mix3", "story3", "kanjiPick2"],
+    questions: 10, needPerfect: true, rewardCoins: 100, rewardTickets: 5 },
 ];
 
 const CHAPTERS = [
@@ -426,6 +550,10 @@ const CHAPTERS = [
   { start: 16, name: "だい4しょう 🍁 かんじとくりあがり" },
   { start: 21, name: "だい5しょう ⛄ とけいとくりさがり" },
   { start: 26, name: "だい6しょう 🌈 まなびマスターへのみち" },
+  { start: 31, name: "だい7しょう 🌍 えいごにちょうせん" },
+  { start: 36, name: "だい8しょう 🚀 おおきなかずマスター" },
+  { start: 41, name: "だい9しょう 👑 かんじはかせ" },
+  { start: 46, name: "だい10しょう 🏆 でんせつのテスト" },
 ];
 
 // ---------- タイピングどうじょう ----------

@@ -310,6 +310,154 @@ function qStory(op) {
   return { text, speak: text, visual: "", choices, answer };
 }
 
+// ---------- えいご ----------
+// せいかいすると えいごの はつおんが ながれる（q.sayEn）
+function qEngPic() {
+  const items = shuffle(ENGLISH_WORDS).slice(0, 3);
+  const target = items[0];
+  const { choices, answer } = finalizeStr(items.map((i) => i.en), target.en);
+  return {
+    text: "これは えいごで どれかな？",
+    speak: `${target.ja}は えいごで どれかな？`,
+    visual: `<span class="big-glyph">${target.e}</span>`,
+    choices, answer,
+    sayEn: target.en,
+  };
+}
+function qEngJa2En() {
+  const items = shuffle(ENGLISH_WORDS).slice(0, 3);
+  const target = items[0];
+  const { choices, answer } = finalizeStr(items.map((i) => i.en), target.en);
+  return {
+    text: `「${target.ja}」は えいごで どれ？`,
+    speak: `${target.ja}は えいごで どれかな？`,
+    visual: "",
+    choices, answer,
+    sayEn: target.en,
+  };
+}
+function qEngEn2Ja() {
+  const items = shuffle(ENGLISH_WORDS).slice(0, 3);
+  const target = items[0];
+  const { choices, answer } = finalizeStr(items.map((i) => i.e + " " + i.ja), target.e + " " + target.ja);
+  return {
+    text: `「${target.en}」は どれかな？`,
+    speak: `${target.kana}は どれかな？`,
+    visual: `<span style="font-size:2.6rem;font-weight:900">${target.en}</span>`,
+    choices, answer,
+    sayEn: target.en,
+  };
+}
+
+// ---------- 3つのかず・おおきなけいさん ----------
+function qAdd3() {
+  const a = rndInt(1, 5), b = rndInt(1, 5), c = rndInt(1, 5);
+  const ans = a + b + c;
+  const { choices, answer } = numChoices(ans, 3, 18);
+  return {
+    text: `${a} ＋ ${b} ＋ ${c} は？`,
+    speak: `${a} たす ${b} たす ${c} は？`,
+    visual: "", choices, answer,
+  };
+}
+function qMix3() {
+  const a = rndInt(3, 9), b = rndInt(1, 5), c = rndInt(1, Math.min(a + b - 1, 6));
+  const ans = a + b - c;
+  const { choices, answer } = numChoices(ans, 0, 15);
+  return {
+    text: `${a} ＋ ${b} − ${c} は？`,
+    speak: `${a} たす ${b} ひく ${c} は？`,
+    visual: "", choices, answer,
+  };
+}
+function qTensCalc() {
+  const isAdd = rnd(2) === 0;
+  let a, b, ans;
+  if (isAdd) { a = rndInt(1, 7) * 10; b = rndInt(1, 9 - a / 10) * 10; ans = a + b; }
+  else { a = rndInt(3, 9) * 10; b = rndInt(1, a / 10 - 1) * 10; ans = a - b; }
+  const { choices, answer } = numChoices(ans, 10, 100);
+  // まちがいの せんたくしも 10のくらいに
+  const wrongs = new Set([ans]);
+  while (wrongs.size < 3) { const d = ans + (rnd(2) ? 10 : -10) * rndInt(1, 3); if (d >= 10 && d <= 100) wrongs.add(d); }
+  const fixed = finalize([...wrongs], ans);
+  return {
+    text: `${a} ${isAdd ? "＋" : "−"} ${b} は？`,
+    speak: `${a} ${isAdd ? "たす" : "ひく"} ${b} は？`,
+    visual: "", choices: fixed.choices, answer: fixed.answer,
+  };
+}
+function qAdd2d1d() {
+  const a = rndInt(12, 88);
+  const b = rndInt(2, 9);
+  const ans = a + b;
+  const { choices, answer } = numChoices(ans, 10, 99);
+  return {
+    text: `${a} ＋ ${b} は？`,
+    speak: `${a} たす ${b} は？`,
+    visual: "", choices, answer,
+  };
+}
+
+// ---------- とけい（15ふんきざみ） ----------
+function qClockQuarter() {
+  const h = rndInt(1, 12);
+  const m = pick([0, 15, 30, 45]);
+  const label = (hh, mm) => mm === 0 ? `${hh}じ` : mm === 30 ? `${hh}じはん` : `${hh}じ${mm}ふん`;
+  const correct = label(h, m);
+  const opts = new Set([correct]);
+  while (opts.size < 3) opts.add(label(rndInt(1, 12), pick([0, 15, 30, 45])));
+  const { choices, answer } = finalizeStr([...opts], correct);
+  return {
+    text: "なんじ なんぷん かな？",
+    speak: "とけいは なんじなんぷん かな？",
+    visual: clockSVG(h, m),
+    choices, answer,
+  };
+}
+
+// ---------- かんじ だい2だん ----------
+function qKanjiRead2() {
+  const items = [];
+  const seenYomi = new Set();
+  for (const it of shuffle(KANJI_BASIC2)) {
+    if (!seenYomi.has(it.y)) { seenYomi.add(it.y); items.push(it); }
+    if (items.length === 3) break;
+  }
+  const target = items[0];
+  const { choices, answer } = finalizeStr(items.map((i) => i.y), target.y);
+  return {
+    text: "なんて よむかな？",
+    speak: "この かんじは なんて よむかな？",
+    visual: `<span class="big-glyph">${target.k}</span>`,
+    choices, answer,
+  };
+}
+function qKanjiPick2() {
+  const items = shuffle(KANJI_BASIC2).slice(0, 3);
+  const target = items[0];
+  const { choices, answer } = finalizeStr(items.map((i) => i.k), target.k);
+  return {
+    text: `「${target.y}」の かんじは どれ？`,
+    speak: `${target.y}、の かんじは どれかな？`,
+    visual: `<span class="big-glyph">${target.e}</span>`,
+    choices, answer,
+  };
+}
+
+// ---------- ぶんしょうだい（3つのかず） ----------
+const STORY3_TEMPLATES = [
+  (a, b, c) => `バスに ${a}にん のっています。${b}にん のってきて、${c}にん おりました。いま なんにん？`,
+  (a, b, c) => `あめが ${a}こ あります。${b}こ もらって、${c}こ たべました。のこりは なんこ？`,
+  (a, b, c) => `こうえんに とりが ${a}わ います。${b}わ とんできて、${c}わ とんでいきました。なんわ に なった？`,
+];
+function qStory3() {
+  const a = rndInt(3, 8), b = rndInt(1, 5), c = rndInt(1, Math.min(a + b - 1, 5));
+  const ans = a + b - c;
+  const text = pick(STORY3_TEMPLATES)(a, b, c);
+  const { choices, answer } = numChoices(ans, 0, 15);
+  return { text, speak: text, visual: "", choices, answer };
+}
+
 // ---------- ディスパッチ ----------
 const GENERATORS = {
   count5:     () => qCount(5),
@@ -334,12 +482,24 @@ const GENERATORS = {
   clockHalf:  qClockHalf,
   story_add:  () => qStory("add"),
   story_sub:  () => qStory("sub"),
+  engPic:     qEngPic,
+  engJa2En:   qEngJa2En,
+  engEn2Ja:   qEngEn2Ja,
+  add3:       qAdd3,
+  mix3:       qMix3,
+  tensCalc:   qTensCalc,
+  add2d1d:    qAdd2d1d,
+  clockQuarter: qClockQuarter,
+  kanjiRead2: qKanjiRead2,
+  kanjiPick2: qKanjiPick2,
+  story3:     qStory3,
 };
 
-// レベルの もんだいセットを つくる
+// レベルの もんだいセットを つくる（レベルごとに もんだいすう を かえられる）
 function buildQuestionSet(levelDef) {
+  const count = levelDef.questions || QUESTIONS_PER_LEVEL;
   const questions = [];
-  for (let i = 0; i < QUESTIONS_PER_LEVEL; i++) {
+  for (let i = 0; i < count; i++) {
     const cat = levelDef.cats[i % levelDef.cats.length];
     questions.push(GENERATORS[cat]());
   }

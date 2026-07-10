@@ -98,13 +98,13 @@ function stripForSpeech(text) {
     .trim();
 }
 
-function speak(text, voice) {
+function speak(text, voice, lang) {
   try {
     speechSynthesis.cancel();
-    const clean = stripForSpeech(text);
+    const clean = lang === "en-US" ? String(text).trim() : stripForSpeech(text);
     if (!clean) return;
     const u = new SpeechSynthesisUtterance(clean);
-    u.lang = "ja-JP";
+    u.lang = lang || "ja-JP";
     u.rate = voice?.rate ?? 0.9;
     u.pitch = voice?.pitch ?? 1.0;
     speechSynthesis.speak(u);
@@ -385,7 +385,8 @@ function renderMap() {
 let quiz = null; // { def, questions, index, correct, locked }
 
 function startQuiz(def) {
-  quiz = { def, questions: buildQuestionSet(def), index: 0, correct: 0, locked: false };
+  quiz = { def, questions: buildQuestionSet(def), index: 0, correct: 0, locked: false,
+    total: def.questions || QUESTIONS_PER_LEVEL };
   showScreen("quiz");
   renderQuestion();
 }
@@ -393,8 +394,8 @@ function startQuiz(def) {
 function renderQuestion() {
   const q = quiz.questions[quiz.index];
   $("quiz-progress").textContent =
-    "●".repeat(quiz.index) + "○".repeat(QUESTIONS_PER_LEVEL - quiz.index) +
-    `　${quiz.index + 1}/${QUESTIONS_PER_LEVEL}`;
+    "●".repeat(quiz.index) + "○".repeat(quiz.total - quiz.index) +
+    `　${quiz.index + 1}/${quiz.total}`;
   $("quiz-question").textContent = q.text;
   $("quiz-visual").innerHTML = q.visual || "";
   $("quiz-feedback").classList.add("hidden");
@@ -424,6 +425,8 @@ function answerQuestion(i, btn) {
     btn.classList.add("correct");
     fb.textContent = pick(["せいかい！ 🎉", "すごい！ ⭕", "やったね！ ✨", "ピンポーン！ 🔔"]);
     soundCorrect();
+    // えいごの もんだいは せいかいすると はつおんが きける
+    if (q.sayEn) setTimeout(() => speak(q.sayEn, { rate: 0.85 }, "en-US"), 300);
   } else {
     btn.classList.add("wrong");
     buttons[q.answer].classList.add("correct");
@@ -432,9 +435,9 @@ function answerQuestion(i, btn) {
   }
   setTimeout(() => {
     quiz.index++;
-    if (quiz.index < QUESTIONS_PER_LEVEL) renderQuestion();
+    if (quiz.index < quiz.total) renderQuestion();
     else finishQuiz();
-  }, i === q.answer ? 1100 : 2200);
+  }, i === q.answer ? (q.sayEn ? 1600 : 1100) : 2200);
 }
 
 $("btn-quiz-quit").addEventListener("click", () => {
@@ -454,9 +457,12 @@ function starsFor(correct) {
 }
 
 function finishQuiz() {
-  const { def, correct } = quiz;
-  const stars = starsFor(correct);
-  const passed = stars > 0;
+  const { def, correct, total } = quiz;
+  const perfect = correct === total;
+  // 「でんせつ」レベルは ぜんもんせいかい しないと クリアできない
+  let stars, passed;
+  if (def.needPerfect) { passed = perfect; stars = passed ? 3 : 0; }
+  else { stars = starsFor(correct); passed = stars > 0; }
   const before = maxCleared();
   let coinsEarned = 0;
   const unlocks = [];
@@ -465,9 +471,13 @@ function finishQuiz() {
   if (passed) {
     const firstTime = !state.cleared[def.lv];
     coinsEarned = firstTime ? COIN_CLEAR : COIN_REPLAY;
-    if (correct === 5) coinsEarned += COIN_PERFECT;
+    if (perfect) coinsEarned += COIN_PERFECT;
     if (firstTime) ticketsEarned += TICKET_FIRST_CLEAR;
-    if (correct === 5) ticketsEarned += TICKET_PERFECT;
+    if (perfect) ticketsEarned += TICKET_PERFECT;
+    // ごうかほうしゅう つきの レベル
+    if (firstTime && def.rewardCoins) coinsEarned += def.rewardCoins;
+    if (firstTime && def.rewardTickets) ticketsEarned += def.rewardTickets;
+    if (firstTime && def.needPerfect) unlocks.push("👑 でんせつのテストを せいは！きみは ほんものの べんきょうマスターだ！！");
     state.coins += coinsEarned;
     state.tickets += ticketsEarned;
     state.cleared[def.lv] = Math.max(state.cleared[def.lv] || 0, stars);
@@ -489,23 +499,23 @@ function finishQuiz() {
     save();
   }
 
-  $("result-emoji").textContent = passed ? (correct === 5 ? "🏆" : "🎉") : "😢";
+  $("result-emoji").textContent = passed ? (perfect ? "🏆" : "🎉") : "😢";
   $("result-title").textContent = passed
-    ? (correct === 5 ? "パーフェクト！" : "クリア！")
+    ? (def.needPerfect ? "でんせつクリア！！" : perfect ? "パーフェクト！" : "クリア！")
     : "もうすこし！";
   $("result-stars").textContent = "⭐".repeat(stars) + "☆".repeat(3 - stars);
-  $("result-detail").textContent = `${QUESTIONS_PER_LEVEL}もん中 ${correct}もん せいかい！`;
+  $("result-detail").textContent = `${total}もん中 ${correct}もん せいかい！`;
   $("result-reward").textContent = passed
     ? `🪙${coinsEarned}コイン${ticketsEarned ? ` ＋ つりけん🎫${ticketsEarned}まい` : ""} ゲット！`
-    : "3もん いじょう せいかいで クリアだよ";
+    : (def.needPerfect ? `${total}もん れんぞく せいかいで クリアだよ！` : "3もん いじょう せいかいで クリアだよ");
   $("result-unlock").innerHTML = unlocks.join("<br>");
   resultReturnScreen = "map";
   showScreen("result");
 
   if (passed) {
     soundCoin();
-    launchConfetti(correct === 5 ? 60 : 30);
-    speak(correct === 5 ? "パーフェクト！すごい！" : "クリア！おめでとう！");
+    launchConfetti(def.needPerfect ? 100 : perfect ? 60 : 30);
+    speak(def.needPerfect ? "でんせつクリア！きみは べんきょうマスターだ！" : perfect ? "パーフェクト！すごい！" : "クリア！おめでとう！");
   } else {
     speak("おしい！もういちど やってみよう！");
   }
@@ -651,8 +661,8 @@ function assignQuestIfNeeded() {
       okPlaces.includes(fs.place) && (fs.rarity === "normal" || fs.rarity === "rare")));
     state.quest = { friendId: f.id, kind, fishId: target.id, met: false, asked: false };
   } else if (kind === "school") {
-    const next = Math.min(maxCleared() + 1, 30);
-    const level = state.cleared[next] ? rndInt(1, 30) : next;
+    const next = Math.min(maxCleared() + 1, LEVELS.length);
+    const level = state.cleared[next] ? rndInt(1, LEVELS.length) : next;
     state.quest = { friendId: f.id, kind, level, met: false, asked: false };
   } else {
     const course = pick(TYPING_COURSES).id;
@@ -802,9 +812,11 @@ function friendAvatarCfg(f) {
 function renderFriendHearts() {
   const f = currentFriend;
   const fd = fdata(f.id);
+  // つぎの しょうごうまでの ゲージ
+  const next = HEART_TITLES.slice().reverse().find((t) => t.min > fd.hearts);
   $("friend-hearts").innerHTML =
-    `<span class="heart-title">${heartTitle(fd.hearts)}</span> ` +
-    "❤️".repeat(fd.hearts) + "🤍".repeat(HEART_MAX - fd.hearts);
+    `<span class="heart-title">${heartTitle(fd.hearts)}</span> ❤️${fd.hearts}/${HEART_MAX}` +
+    (next ? `<span class="heart-next">（あと${next.min - fd.hearts}で ${next.title}）</span>` : "");
 }
 
 function renderFriendRoom() {
