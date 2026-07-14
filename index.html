@@ -20,7 +20,41 @@
       <p class="subtitle">べんきょうして まちを にぎやかに しよう！</p>
     </div>
     <button id="btn-start" class="big-btn">はじめる</button>
+    <button id="btn-backup-title" class="small-btn">🔑 あいことば（バックアップ）</button>
     <button id="btn-reset" class="small-btn danger hidden">さいしょから やりなおす</button>
+  </div>
+</div>
+
+<!-- ======== あいことば（バックアップ） ======== -->
+<div id="backup-overlay" class="picker-overlay hidden">
+  <div class="picker-card backup-card">
+    <h3>🔑 あいことば</h3>
+    <p class="backup-note">セーブデータを もじに かえて ほぞんできるよ。<br>おうちのひとと いっしょに やってね！</p>
+    <div class="tabs backup-tabs">
+      <button id="btn-bk-make" class="tab-btn selected">つくる</button>
+      <button id="btn-bk-load" class="tab-btn">いれる</button>
+    </div>
+    <div id="bk-make-pane">
+      <button id="btn-bk-file-save" class="big-btn bk-btn">📥 ファイルに ほぞん</button>
+      <p class="backup-note">↑ワンタップで セーブファイルが ダウンロードされるよ（おすすめ）</p>
+      <details class="bk-details">
+        <summary>もじで ほぞんしたいとき（コピーよう）</summary>
+        <textarea id="bk-out" class="bk-text" readonly></textarea>
+        <button id="btn-bk-copy" class="small-btn">📋 コピーする</button>
+      </details>
+      <p id="bk-copy-msg" class="backup-note"></p>
+    </div>
+    <div id="bk-load-pane" class="hidden">
+      <button id="btn-bk-file-load" class="big-btn bk-btn">📤 ファイルを えらんで ふっかつ</button>
+      <input id="bk-file-input" type="file" accept=".txt,text/plain" class="hidden">
+      <details class="bk-details">
+        <summary>もじを はりつけて ふっかつしたいとき</summary>
+        <textarea id="bk-in" class="bk-text" placeholder="ここに はりつける"></textarea>
+        <button id="btn-bk-restore" class="small-btn">✨ ふっかつする！</button>
+      </details>
+      <p id="bk-load-msg" class="backup-note"></p>
+    </div>
+    <button id="btn-bk-close" class="small-btn">とじる</button>
   </div>
 </div>
 
@@ -71,6 +105,7 @@
     <button class="small-btn btn-exit">🚪 そとにでる</button>
     <span class="status-title">🏠 じぶんのいえ</span>
     <span class="status-coin">🪙 <span id="home-coins">0</span></span>
+    <button id="btn-backup-home" class="small-btn">🔑</button>
   </div>
   <div class="room" id="room">
     <div class="room-wall"></div>

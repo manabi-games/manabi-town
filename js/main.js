@@ -157,6 +157,111 @@ function updateHud() {
   $("hud-stars").textContent = totalStars();
 }
 
+// ---------- あいことば（バックアップ） ----------
+// セーブJSON → base64 に へんかんし、チェックサムを つける
+// かたち: OBK1.<base64>.<checksum>
+function bkChecksum(s) {
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = ((h * 33) ^ s.charCodeAt(i)) >>> 0;
+  return h.toString(36);
+}
+function makeBackupCode(st) {
+  const json = JSON.stringify(st);
+  const b64 = btoa(String.fromCharCode(...new TextEncoder().encode(json)));
+  return `OBK1.${b64}.${bkChecksum(b64)}`;
+}
+// もどりち: { ok, state? , error? }
+function parseBackupCode(code) {
+  try {
+    const m = String(code || "").trim().replace(/\s+/g, "").match(/^OBK1\.([A-Za-z0-9+/=]+)\.([a-z0-9]+)$/);
+    if (!m) return { ok: false, error: "セーブデータの かたちが ちがうみたい。ただしい ファイル・もじか たしかめてね" };
+    if (bkChecksum(m[1]) !== m[2]) return { ok: false, error: "もじが かけているか まちがっているみたい。もういちど コピーしてね" };
+    const json = new TextDecoder().decode(Uint8Array.from(atob(m[1]), (c) => c.charCodeAt(0)));
+    const parsed = JSON.parse(json);
+    if (!parsed || !parsed.name || !parsed.avatar) return { ok: false, error: "セーブデータが はいっていないみたい" };
+    return { ok: true, state: parsed };
+  } catch (e) {
+    return { ok: false, error: "よみこめなかった…もういちど ためしてね" };
+  }
+}
+
+function openBackup() {
+  const st = state || load();
+  $("bk-out").value = st ? makeBackupCode(st) : "（まだ セーブデータが ないよ）";
+  $("bk-copy-msg").textContent = "";
+  $("bk-load-msg").textContent = "";
+  $("bk-in").value = "";
+  $("backup-overlay").classList.remove("hidden");
+}
+$("btn-backup-title").addEventListener("click", openBackup);
+$("btn-backup-home").addEventListener("click", openBackup);
+$("btn-bk-close").addEventListener("click", () => $("backup-overlay").classList.add("hidden"));
+$("btn-bk-make").addEventListener("click", () => {
+  $("btn-bk-make").classList.add("selected"); $("btn-bk-load").classList.remove("selected");
+  $("bk-make-pane").classList.remove("hidden"); $("bk-load-pane").classList.add("hidden");
+});
+$("btn-bk-load").addEventListener("click", () => {
+  $("btn-bk-load").classList.add("selected"); $("btn-bk-make").classList.remove("selected");
+  $("bk-load-pane").classList.remove("hidden"); $("bk-make-pane").classList.add("hidden");
+});
+$("btn-bk-copy").addEventListener("click", async () => {
+  const text = $("bk-out").value;
+  try {
+    await navigator.clipboard.writeText(text);
+    $("bk-copy-msg").textContent = "✅ コピーしたよ！メモちょうや LINEに はりつけて ほぞんしてね";
+  } catch (e) {
+    $("bk-out").select();
+    document.execCommand("copy");
+    $("bk-copy-msg").textContent = "✅ コピーしたよ！（うまくいかないときは ながおしで コピーしてね）";
+  }
+});
+function restoreFromCode(code) {
+  const result = parseBackupCode(code);
+  if (!result.ok) {
+    $("bk-load-msg").textContent = "❌ " + result.error;
+    return;
+  }
+  const existing = load();
+  if (existing && !confirm(`いまの「${existing.name}」のデータは きえて、ほぞんした「${result.state.name}」のデータに かわるよ。いい？`)) {
+    return;
+  }
+  localStorage.setItem(SAVE_KEY, JSON.stringify(result.state));
+  $("bk-load-msg").textContent = "✅ ふっかつした！";
+  speak("おかえりなさい！");
+  setTimeout(() => location.reload(), 1200);
+}
+$("btn-bk-restore").addEventListener("click", () => restoreFromCode($("bk-in").value));
+
+// ファイルに ほぞん（ワンタップ・コピーふよう）
+$("btn-bk-file-save").addEventListener("click", () => {
+  const st = state || load();
+  if (!st) { $("bk-copy-msg").textContent = "まだ セーブデータが ないよ"; return; }
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  const fname = `おべんきょコレクション_セーブ_${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}.txt`;
+  const blob = new Blob([makeBackupCode(st)], { type: "text/plain" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = fname;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+  $("bk-copy-msg").textContent = `✅ 「${fname}」を ほぞんしたよ！（ダウンロードフォルダに はいってるよ）`;
+});
+
+// ファイルから ふっかつ
+$("btn-bk-file-load").addEventListener("click", () => $("bk-file-input").click());
+$("bk-file-input").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    restoreFromCode(text);
+  } catch (err) {
+    $("bk-load-msg").textContent = "❌ ファイルが よみこめなかった…";
+  }
+  e.target.value = "";
+});
+
 // ---------- トースト通知 ----------
 let toastQueue = [];
 let toastShowing = false;
