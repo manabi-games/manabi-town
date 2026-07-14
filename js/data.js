@@ -81,7 +81,30 @@ const SHOP_CATS = [
   { id: "glasses", name: "めがね" },
   { id: "item",  name: "もちもの" },
   { id: "room",  name: "へやのかざり" },
+  { id: "town",  name: "まちのかざり" },
 ];
+
+// ---------- まちのかざり（かうと まちに ずっと かざられる） ----------
+// x: まちのなかの よこいち(px) / b: じめんからのたかさ(px) / size: おおきさ(rem) / back: はいけいがわ
+const TOWN_DECOR = [
+  { id: "td_flower",   cat: "town", name: "はなだん",           icon: "🌷", deco: "🌷🌼🌷", price: 40,  unlockLv: 1,  x: 430,  b: 72,  size: 1.6 },
+  { id: "td_bench",    cat: "town", name: "ベンチ",             icon: "🪑", deco: "🪑",     price: 60,  unlockLv: 1,  x: 1660, b: 74,  size: 2.2 },
+  { id: "td_lantern",  cat: "town", name: "ちょうちん",         icon: "🏮", deco: "🏮",     price: 70,  unlockLv: 1,  x: 1300, b: 200, size: 2.2 },
+  { id: "td_sunflower", cat: "town", name: "ひまわりばたけ",    icon: "🌻", deco: "🌻🌻🌻", price: 90,  unlockLv: 1,  x: 860,  b: 72,  size: 1.8 },
+  { id: "td_koinobori", cat: "town", name: "こいのぼり",        icon: "🎏", deco: "🎏",     price: 110, unlockLv: 3,  x: 2040, b: 210, size: 3.0 },
+  { id: "td_tent",     cat: "town", name: "キャンプテント",     icon: "⛺", deco: "⛺",     price: 130, unlockLv: 5,  x: 3440, b: 130, size: 2.8 },
+  { id: "td_slide",    cat: "town", name: "すべりだい",         icon: "🛝", deco: "🛝",     price: 150, unlockLv: 7,  x: 3560, b: 74,  size: 2.8 },
+  { id: "td_snowman",  cat: "town", name: "ゆきだるま",         icon: "⛄", deco: "⛄",     price: 170, unlockLv: 9,  x: 950,  b: 72,  size: 2.4 },
+  { id: "td_fountain", cat: "town", name: "おおふんすい",       icon: "⛲", deco: "⛲",     price: 200, unlockLv: 12, x: 1160, b: 150, size: 3.4, back: true },
+  { id: "td_moai",     cat: "town", name: "モアイぞう",         icon: "🗿", deco: "🗿",     price: 230, unlockLv: 15, x: 4420, b: 74,  size: 2.6 },
+  { id: "td_carousel", cat: "town", name: "メリーゴーランド",   icon: "🎠", deco: "🎠",     price: 280, unlockLv: 18, x: 2450, b: 190, size: 3.6, back: true },
+  { id: "td_circus",   cat: "town", name: "サーカステント",     icon: "🎪", deco: "🎪",     price: 320, unlockLv: 21, x: 640,  b: 200, size: 4.2, back: true },
+  { id: "td_dino",     cat: "town", name: "きょうりゅうぞう",   icon: "🦖", deco: "🦖",     price: 360, unlockLv: 24, x: 3050, b: 180, size: 3.8, back: true },
+  { id: "td_tower",    cat: "town", name: "おおきなタワー",     icon: "🗼", deco: "🗼",     price: 420, unlockLv: 27, x: 60,   b: 200, size: 5.0, back: true },
+  { id: "td_wheel",    cat: "town", name: "かんらんしゃ",       icon: "🎡", deco: "🎡",     price: 500, unlockLv: 31, x: 3930, b: 200, size: 6.0, back: true },
+  { id: "td_rocket",   cat: "town", name: "うちゅうロケット",   icon: "🚀", deco: "🚀",     price: 600, unlockLv: 36, x: 4720, b: 190, size: 4.6, back: true },
+];
+SHOP_ITEMS.push(...TOWN_DECOR);
 const SHOP_ITEM_MAP = {};
 SHOP_ITEMS.forEach((i) => { SHOP_ITEM_MAP[i.id] = i; });
 
@@ -385,6 +408,20 @@ Object.assign(FRIEND_EXTRAS, {
     remind: "ハロー！れいの おねがい、まだかな？",
   },
 });
+
+// ---------- ペットの おさんぽ（つれあるき） ----------
+const PET_FOLLOW_LINES = {
+  p1:  { go: "ワン！ぼくも いくよ！", bye: "また あした！ワン！" },
+  p2:  { go: "ふーん。いこっか", bye: "またね〜" },
+  p3:  { go: "ぴょん！ぴょんぴょん！たのしい〜！", bye: "また あそぼうね！ぴょん！" },
+  p4:  { go: "ツイテイク〜！ツイテイク〜！", bye: "マタネ〜！マタネ〜！" },
+  p5:  { go: "キラキラ〜！いっしょに いこう！", bye: "また あした！キラキラ〜！" },
+  p6:  { go: "ほっぺに おやつ つめて いくね！", bye: "またね！チュチュ！" },
+  p7:  { go: "ゆっくり いこうね〜", bye: "またね〜。ゆっくりね" },
+  p8:  { go: "コンコン！おさんぽ だいすき！", bye: "またね！こんどは かくれんぼ しようぜ！" },
+  p9:  { go: "…ゆっくり…いこうか…", bye: "…またね…" },
+  p10: { go: "ペタペタペタ！いっしょに いこう！", bye: "また あした！ペタペタ〜！" },
+};
 
 // ---------- ペットに ごはんを あげたとき ----------
 const PET_FEED_LINES = {

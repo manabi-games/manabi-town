@@ -213,9 +213,37 @@ function renderTownDynamic() {
   });
   dyn.appendChild(spot);
 
-  // ペット（こうえん の あたりを うろうろ）
+  // まちのかざり（かったものが かざられる）
+  TOWN_DECOR.filter((d) => state.owned.includes(d.id)).forEach((d) => {
+    const el = document.createElement("div");
+    el.className = "town-decor" + (d.back ? " back" : "");
+    el.textContent = d.deco;
+    el.style.left = d.x + "px";
+    el.style.bottom = d.b + "px";
+    el.style.fontSize = d.size + "rem";
+    dyn.appendChild(el);
+  });
+
+  // つれあるき中の ペット
+  town.follower = null;
+  if (state.petFollow) {
+    const p = PETS.find((x) => x.id === state.petFollow && x.unlockLv <= maxLv);
+    if (p) {
+      const el = document.createElement("div");
+      el.className = "town-npc town-pet pet-follower";
+      const face = p.img ? `<img class="pet-img" src="${p.img}" alt="">` : `<span class="pet-emoji">${p.icon}</span>`;
+      el.innerHTML = `${face}<span class="npc-name">${p.name}</span>`;
+      el.addEventListener("click", (e) => { e.stopPropagation(); petTalk(el, p); });
+      dyn.appendChild(el);
+      town.follower = { el, x: town.playerX - 85 * town.facing, p };
+    } else {
+      state.petFollow = null;
+    }
+  }
+
+  // ペット（こうえん の あたりを うろうろ・つれあるき中の こは のぞく）
   PETS.forEach((p, i) => {
-    if (p.unlockLv > maxLv) return;
+    if (p.unlockLv > maxLv || p.id === state.petFollow) return;
     const npc = document.createElement("div");
     npc.className = "town-npc town-pet";
     const face = p.img ? `<img class="pet-img" src="${p.img}" alt="">` : `<span class="pet-emoji">${p.icon}</span>`;
@@ -254,26 +282,47 @@ function npcTalk(npcEl, text, voice) {
   return bubble;
 }
 
-// ペット: はなしかけ ＋ たべものを もっていれば あげられる
+// ペット: はなしかけ ＋ ごはん ＋ つれあるき
 function petTalk(npcEl, p) {
   const bubble = npcTalk(npcEl, pick(p.lines), PET_VOICE);
+  // ごはんボタン
   const owned = FOODS.filter((f) => (state.foods[f.id] || 0) > 0);
-  if (!owned.length) return;
-  const btn = document.createElement("button");
-  const food = pick(owned);
-  btn.className = "feed-btn";
-  btn.textContent = `${food.icon} あげる`;
-  btn.addEventListener("click", (e) => {
+  if (owned.length) {
+    const btn = document.createElement("button");
+    const food = pick(owned);
+    btn.className = "feed-btn";
+    btn.textContent = `${food.icon} あげる`;
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      state.foods[food.id]--;
+      save();
+      dailyProgress("feed");
+      soundCorrect();
+      npcEl.classList.add("feed-bounce");
+      setTimeout(() => npcEl.classList.remove("feed-bounce"), 1300);
+      npcTalk(npcEl, pick(PET_FEED_LINES[p.id] || p.lines), PET_VOICE);
+    });
+    bubble.appendChild(btn);
+  }
+  // つれあるきボタン
+  const fbtn = document.createElement("button");
+  const following = state.petFollow === p.id;
+  fbtn.className = "feed-btn follow-btn";
+  fbtn.textContent = following ? "👋 おわかれする" : "🐾 つれていく";
+  fbtn.addEventListener("click", (e) => {
     e.stopPropagation();
-    state.foods[food.id]--;
+    const lines = PET_FOLLOW_LINES[p.id] || {};
+    if (following) {
+      state.petFollow = null;
+      speak(lines.bye || "またね！", PET_VOICE);
+    } else {
+      state.petFollow = p.id;
+      speak(lines.go || "いっしょに いこう！", PET_VOICE);
+    }
     save();
-    dailyProgress("feed");
-    soundCorrect();
-    npcEl.classList.add("feed-bounce");
-    setTimeout(() => npcEl.classList.remove("feed-bounce"), 1300);
-    npcTalk(npcEl, pick(PET_FEED_LINES[p.id] || p.lines), PET_VOICE);
+    renderTownDynamic();
   });
-  bubble.appendChild(btn);
+  bubble.appendChild(fbtn);
 }
 
 // ---------- はいれる たてもの ----------
@@ -395,6 +444,18 @@ function townTick(t) {
   p.style.left = town.playerX + "px";
   p.classList.toggle("walking", town.moving !== 0);
   p.classList.toggle("face-left", town.facing === -1);
+
+  // つれあるきペット（プレイヤーの うしろを ついてくる）
+  if (town.follower) {
+    const f = town.follower;
+    const target = town.playerX - 85 * town.facing;
+    const diff = target - f.x;
+    const moving = Math.abs(diff) > 6;
+    if (moving) f.x += diff * Math.min(1, dt * 3.2);
+    f.el.style.left = f.x + "px";
+    f.el.classList.toggle("walking", moving);
+    f.el.classList.toggle("face-left", diff < 0);
+  }
 
   // NPCいどう
   const now = t;

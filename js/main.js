@@ -22,6 +22,7 @@ function defaultState() {
     tickets: 3,                  // つりけん（さいしょに 3まい プレゼント）
     fish: {},                    // つった さかな { fishId: かず }
     fishPlace: "pond",           // いま えらんでいる つりばしょ
+    petFollow: null,             // つれあるいている ペット
     daily: null,                 // きょうのミッション
     lastGift: null,              // ログインプレゼントを もらった ひ
   };
@@ -44,6 +45,7 @@ function load() {
         if (typeof parsed.tickets !== "number") parsed.tickets = 3;
         if (!parsed.fish) parsed.fish = {};
         if (!parsed.fishPlace) parsed.fishPlace = "pond";
+        if (!("petFollow" in parsed)) parsed.petFollow = null;
         if (!("daily" in parsed)) parsed.daily = null;
         if (!("lastGift" in parsed)) parsed.lastGift = null;
         // ふるい quest に fish しゅるいは ないので そのまま OK
