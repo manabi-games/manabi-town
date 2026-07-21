@@ -77,15 +77,15 @@ function renderAvatar(cfg) {
   }
 
   // ---- PNGパーツよう ヘルパー ----
-  // はば w で ちゅうおうに はいち、boxH の わく内に アスペクトひ いじで うえづめ
-  const pngLayer = (src, w, y, boxH) =>
-    `<image href="${src}" x="${100 - w / 2}" y="${y}" width="${w}" height="${boxH}" preserveAspectRatio="xMidYMin meet"/>`;
+  // じっそくで きめた x/y/w/h に そのまま はいち（あたまに ぴったり あう）
+  const pngLayer = (p) =>
+    `<image href="${p.img}" x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" preserveAspectRatio="none"/>`;
 
   // ---- かみのけ ----
   let hairSvg = "";
   const pngHair = PNG_HAIR_MAP[cfg.hairStyle];
   if (pngHair) {
-    hairSvg = pngLayer(pngHair.img, pngHair.w, pngHair.y, 175);
+    hairSvg = pngLayer(pngHair);
   } else
   switch (cfg.hairStyle || "short") {
     case "none": // PNGパーツ用・きじゅんキャラ用
@@ -151,14 +151,15 @@ function renderAvatar(cfg) {
   let outfitSvg = "";
   const outfitDef = cfg.outfit && typeof SHOP_ITEM_MAP !== "undefined" ? SHOP_ITEM_MAP[cfg.outfit] : null;
   if (outfitDef && outfitDef.img) {
-    outfitSvg = pngLayer(outfitDef.img, outfitDef.w, outfitDef.y, 105);
+    // おようふくは これまでどおり ちゅうおうぞろえ
+    outfitSvg = `<image href="${outfitDef.img}" x="${100 - outfitDef.w / 2}" y="${outfitDef.y}" width="${outfitDef.w}" height="105" preserveAspectRatio="xMidYMin meet"/>`;
   }
 
   // ---- ぼうし ----
   let hatSvg = "";
   const hatDef = cfg.hat && typeof SHOP_ITEM_MAP !== "undefined" ? SHOP_ITEM_MAP[cfg.hat] : null;
   if (hatDef && hatDef.img) {
-    hatSvg = pngLayer(hatDef.img, hatDef.w, hatDef.y, 165);
+    hatSvg = pngLayer(hatDef);
   } else
   switch (cfg.hat) {
     case "hat_cap":

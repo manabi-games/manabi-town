@@ -29,16 +29,17 @@ const SHOP_ITEMS = [
   { id: "gl_heart",   cat: "glasses", name: "ハートめがね",   icon: "💗", price: 90,  unlockLv: 14 },
   { id: "gl_star",    cat: "glasses", name: "スターめがね",   icon: "⭐", price: 110, unlockLv: 20 },
   // ぼうし（PNGそざい）
-  { id: "hatp_02", cat: "hat", name: "たんけんぼうし",        img: "assets/parts/hat_02.png", price: 60,  unlockLv: 5,  w: 140, y: 12 },
-  { id: "hatp_06", cat: "hat", name: "やきゅうヘルメット",    img: "assets/parts/hat_06.png", price: 70,  unlockLv: 6,  w: 128, y: 22 },
-  { id: "hatp_07", cat: "hat", name: "にんじゃはちまき",      img: "assets/parts/hat_07.png", price: 60,  unlockLv: 8,  w: 118, y: 38 },
-  { id: "hatp_03", cat: "hat", name: "ねこみみカチューシャ",  img: "assets/parts/hat_03.png", price: 80,  unlockLv: 10, w: 122, y: 28 },
-  { id: "hatp_08", cat: "hat", name: "おはなのカチューシャ",  img: "assets/parts/hat_08.png", price: 70,  unlockLv: 13, w: 124, y: 24 },
-  { id: "hatp_04", cat: "hat", name: "きょうりゅうのかぶりもの", img: "assets/parts/hat_04.png", price: 120, unlockLv: 17, w: 130, y: 16 },
-  { id: "hatp_05", cat: "hat", name: "うさぎのかぶりもの",    img: "assets/parts/hat_05.png", price: 120, unlockLv: 19, w: 126, y: 4 },
-  { id: "hatp_10", cat: "hat", name: "ケーキのぼうし",        img: "assets/parts/hat_10.png", price: 100, unlockLv: 21, w: 126, y: 8 },
-  { id: "hatp_09", cat: "hat", name: "うちゅうヘルメット",    img: "assets/parts/hat_09.png", price: 180, unlockLv: 23, w: 148, y: 28 },
-  { id: "hatp_01", cat: "hat", name: "おうさまセット",        img: "assets/parts/hat_01.png", price: 250, unlockLv: 29, w: 132, y: 12 },
+  // x/y/w/h は じっそくで あわせた あたい（め・まゆを かくさず、あたまの カーブに のる）
+  { id: "hatp_02", cat: "hat", name: "たんけんぼうし",        img: "assets/parts/hat_02.png", price: 60,  unlockLv: 5,  x: 30.4, y: 24,   w: 128, h: 89.9 },
+  { id: "hatp_06", cat: "hat", name: "やきゅうヘルメット",    img: "assets/parts/hat_06.png", price: 70,  unlockLv: 6,  x: 25.4, y: 19.5, w: 134, h: 109.4 },
+  { id: "hatp_07", cat: "hat", name: "にんじゃはちまき",      img: "assets/parts/hat_07.png", price: 60,  unlockLv: 8,  x: 47.6, y: 34,   w: 117, h: 63.1 },
+  { id: "hatp_03", cat: "hat", name: "ねこみみカチューシャ",  img: "assets/parts/hat_03.png", price: 80,  unlockLv: 10, x: 31.2, y: 37.5, w: 117, h: 65.3 },
+  { id: "hatp_08", cat: "hat", name: "おはなのカチューシャ",  img: "assets/parts/hat_08.png", price: 70,  unlockLv: 13, x: 42.9, y: 28,   w: 119, h: 90.7 },
+  { id: "hatp_04", cat: "hat", name: "きょうりゅうのかぶりもの", img: "assets/parts/hat_04.png", price: 120, unlockLv: 17, x: 39.5, y: 1.5, w: 119, h: 115.6 },
+  { id: "hatp_05", cat: "hat", name: "うさぎのかぶりもの",    img: "assets/parts/hat_05.png", price: 120, unlockLv: 19, x: 43.8, y: -2,   w: 108, h: 130.3 },
+  { id: "hatp_10", cat: "hat", name: "ケーキのぼうし",        img: "assets/parts/hat_10.png", price: 100, unlockLv: 21, x: 42.2, y: -0.5, w: 116, h: 104.9 },
+  { id: "hatp_09", cat: "hat", name: "うちゅうヘルメット",    img: "assets/parts/hat_09.png", price: 180, unlockLv: 23, x: 27.8, y: 15,   w: 144, h: 133.2 },
+  { id: "hatp_01", cat: "hat", name: "おうさまセット",        img: "assets/parts/hat_01.png", price: 250, unlockLv: 29, x: 52.1, y: -2,   w: 92,  h: 101.5 },
   // おようふく（PNGそざい・からだに かさねる）
   { id: "out_04", cat: "outfit", name: "にじいろTシャツ",     img: "assets/parts/outfit_04.png", price: 60,  unlockLv: 4,  w: 118, y: 140 },
   { id: "out_08", cat: "outfit", name: "パーカー",            img: "assets/parts/outfit_08.png", price: 70,  unlockLv: 7,  w: 116, y: 140 },
@@ -159,17 +160,20 @@ const PETS = [
 
 // ---------- PNGパーツ（AI生成そざい） ----------
 // w: ひょうじはば(viewBox 200x260きじゅん)、y: うえのいち。x は 100-w/2 でちゅうおう。
+// x/y/w/h は アバター(200x260)の ざひょう。
+// あたま（ちゅうしん100,100・はんけい52）に ぴったり あうよう、
+// がぞうの「かおの あな」を じっそくして じどうで あわせた あたい。
 const PNG_HAIRS = [
-  { id: "png_h01", name: "おだんご",         img: "assets/parts/hair_01.png", w: 140, y: 26 },
-  { id: "png_h02", name: "みつあみ",         img: "assets/parts/hair_02.png", w: 150, y: 30 },
-  { id: "png_h03", name: "ぱっつんボブ",     img: "assets/parts/hair_03.png", w: 132, y: 30 },
-  { id: "png_h04", name: "ゆるふわロング",   img: "assets/parts/hair_04.png", w: 138, y: 30 },
-  { id: "png_h05", name: "サイドポニー",     img: "assets/parts/hair_05.png", w: 142, y: 26 },
-  { id: "png_h06", name: "さらさらショート", img: "assets/parts/hair_06.png", w: 130, y: 32 },
-  { id: "png_h07", name: "ヒーローヘア",     img: "assets/parts/hair_07.png", w: 134, y: 14 },
-  { id: "png_h08", name: "くるくるヘア",     img: "assets/parts/hair_08.png", w: 136, y: 26 },
-  { id: "png_h09", name: "ワイルドヘア",     img: "assets/parts/hair_09.png", w: 148, y: 18 },
-  { id: "png_h10", name: "アフロ",           img: "assets/parts/hair_10.png", w: 150, y: 14 },
+  { id: "png_h01", name: "おだんご",         img: "assets/parts/hair_01.png", x: 31.6, y: 27,   w: 134, h: 99.4 },
+  { id: "png_h02", name: "みつあみ",         img: "assets/parts/hair_02.png", x: 38.5, y: 30,   w: 123, h: 146.9 },
+  { id: "png_h03", name: "ぱっつんボブ",     img: "assets/parts/hair_03.png", x: 33.7, y: 23,   w: 133, h: 122.2 },
+  { id: "png_h04", name: "ゆるふわロング",   img: "assets/parts/hair_04.png", x: 29,   y: 33,   w: 142, h: 169.1 },
+  { id: "png_h05", name: "サイドポニー",     img: "assets/parts/hair_05.png", x: 37.7, y: 16,   w: 150, h: 151 },
+  { id: "png_h06", name: "さらさらショート", img: "assets/parts/hair_06.png", x: 33.7, y: 12,   w: 133, h: 100 },
+  { id: "png_h07", name: "ヒーローヘア",     img: "assets/parts/hair_07.png", x: 40.2, y: 9,    w: 120, h: 110 },
+  { id: "png_h08", name: "くるくるヘア",     img: "assets/parts/hair_08.png", x: 18.5, y: 1,    w: 161, h: 121.7 },
+  { id: "png_h09", name: "ワイルドヘア",     img: "assets/parts/hair_09.png", x: 23,   y: 0,    w: 149, h: 116.3 },
+  { id: "png_h10", name: "アフロ",           img: "assets/parts/hair_10.png", x: 25,   y: 1,    w: 153, h: 126.7 },
 ];
 const PNG_HAIR_MAP = Object.fromEntries(PNG_HAIRS.map((p) => [p.id, p]));
 
