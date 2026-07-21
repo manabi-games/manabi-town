@@ -394,8 +394,18 @@ const MAKER_ROWS = [
   { key: "shirt", label: "ふくのいろ", type: "color", values: SHIRT_COLORS_FREE, raw: true },
 ];
 
-function startMaker() {
-  makerCfg = defaultState().avatar;
+let makerEditing = false; // true = とちゅうで みためを かえるモード
+
+function startMaker(editing) {
+  makerEditing = !!editing;
+  makerCfg = editing
+    ? JSON.parse(JSON.stringify(state.avatar)) // いまの みため（ぼうし・ふくも そのまま）
+    : defaultState().avatar;
+  $("screen-maker").querySelector(".screen-title").textContent =
+    editing ? "みためを かえよう！" : "じぶんの キャラを つくろう！";
+  $("btn-maker-done").textContent = editing ? "これで けってい！" : "これで けってい！";
+  $("btn-maker-cancel").classList.toggle("hidden", !editing);
+  $("input-name").value = editing ? state.name : "";
   const box = $("maker-controls");
   box.innerHTML = "";
   MAKER_ROWS.forEach((row) => {
@@ -433,7 +443,16 @@ function startMaker() {
 
 $("btn-maker-done").addEventListener("click", () => {
   if (!makerCfg) return; // キャラつくりを ひらいていない ときは むし
-  const name = $("input-name").value.trim() || "きみ";
+  const name = $("input-name").value.trim() || (makerEditing ? state.name : "きみ");
+  if (makerEditing) {
+    // とちゅうで みためチェンジ: きろくは そのまま
+    state.avatar = makerCfg;
+    state.name = name;
+    save();
+    speak("かっこよく なったね！");
+    showScreen("closet");
+    return;
+  }
   state = defaultState();
   state.name = name;
   state.avatar = makerCfg;
@@ -441,6 +460,11 @@ $("btn-maker-done").addEventListener("click", () => {
   speak(`${name}、おべんきょコレクションの まちへ ようこそ！`);
   showScreen("town");
 });
+$("btn-maker-cancel").addEventListener("click", () => {
+  speechSynthesis.cancel();
+  showScreen("closet");
+});
+$("btn-edit-look").addEventListener("click", () => startMaker(true));
 
 // ---------- じぶんのいえ ----------
 const HOME_LINES = [
@@ -455,14 +479,51 @@ function renderHome() {
   $("home-avatar").innerHTML = renderAvatar(state.avatar);
   const itemsBox = $("room-items");
   itemsBox.innerHTML = "";
+  // へやの よこはば に あわせて かぐの おおきさを きめる（スマホでも おなじ みため）
+  const roomW = $("room").clientWidth || 640;
   SHOP_ITEMS.filter((i) => i.cat === "room" && state.owned.includes(i.id)).forEach((i) => {
     const d = document.createElement("div");
     d.className = "room-item";
     d.textContent = i.icon;
     d.style.left = i.pos.left;
     d.style.bottom = i.pos.bottom;
+    d.style.fontSize = (roomW * (i.size || 8) / 100) + "px";
+    // てまえの かぐほど まえに ひょうじ（おくの かぐに かさならない）
+    d.style.zIndex = String(100 - parseInt(i.pos.bottom, 10));
     itemsBox.appendChild(d);
   });
+  renderHomePet(roomW);
+}
+
+// がめんの おおきさが かわったら へやを かきなおす
+window.addEventListener("resize", () => {
+  if (document.querySelector(".screen.active")?.id === "screen-home") renderHome();
+});
+
+// つれあるき中の ペットは いえにも ついてくる
+function renderHomePet(roomW) {
+  const el = $("home-pet");
+  const p = state.petFollow ? PETS.find((x) => x.id === state.petFollow) : null;
+  if (!p) { el.classList.add("hidden"); el.innerHTML = ""; return; }
+  el.classList.remove("hidden");
+  // ペットも へやの はばに あわせる（どの ペットも おなじ おおきさの わく）
+  const w = (roomW || $("room").clientWidth || 640) * 0.119;
+  el.style.width = w + "px";
+  el.innerHTML = (p.img
+    ? `<img src="${p.img}" alt="" style="width:${w}px;height:${w}px">`
+    : `<span class="pet-emoji" style="font-size:${w * 0.9}px">${p.icon}</span>`) +
+    `<span class="npc-name">${p.name}</span>`;
+  el.onclick = () => {
+    const line = pick(PET_FEED_LINES[p.id] || p.lines);
+    const bubble = $("home-bubble");
+    bubble.textContent = `${p.name}「${line}」`;
+    bubble.classList.remove("hidden");
+    speak(line, PET_VOICE);
+    el.classList.add("pet-hop");
+    setTimeout(() => el.classList.remove("pet-hop"), 900);
+    clearTimeout(bubble._t);
+    bubble._t = setTimeout(() => bubble.classList.add("hidden"), 3500);
+  };
 }
 $("home-avatar").addEventListener("click", () => {
   const line = HOME_LINES[rnd(HOME_LINES.length)];

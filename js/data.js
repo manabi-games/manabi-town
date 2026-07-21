@@ -66,12 +66,13 @@ const SHOP_ITEMS = [
   { id: "ac_wand",    cat: "item", name: "ほしのステッキ", icon: "🪄", price: 90,  unlockLv: 16 },
   { id: "ac_guitar",  cat: "item", name: "ギター",         icon: "🎸", price: 130, unlockLv: 22 },
   // へやのかざり
-  { id: "rm_plant",   cat: "room", name: "かんようしょくぶつ", icon: "🪴", price: 35,  unlockLv: 3,  pos: { left: "6%",  bottom: "8%" } },
-  { id: "rm_tv",      cat: "room", name: "テレビ",             icon: "📺", price: 80,  unlockLv: 8,  pos: { left: "72%", bottom: "30%" } },
-  { id: "rm_book",    cat: "room", name: "ほんだな",           icon: "📚", price: 60,  unlockLv: 11, pos: { left: "40%", bottom: "38%" } },
-  { id: "rm_sofa",    cat: "room", name: "ソファ",             icon: "🛋️", price: 100, unlockLv: 15, pos: { left: "70%", bottom: "6%" } },
-  { id: "rm_robot",   cat: "room", name: "ロボット",           icon: "🤖", price: 140, unlockLv: 21, pos: { left: "14%", bottom: "34%" } },
-  { id: "rm_fish",    cat: "room", name: "すいそう",           icon: "🐠", price: 120, unlockLv: 25, pos: { left: "42%", bottom: "6%" } },
+  // へやのかざり: size は へやの よこはば に たいする ％（どの がめんはば でも おなじ みため）
+  { id: "rm_plant",   cat: "room", name: "かんようしょくぶつ", icon: "🪴", price: 35,  unlockLv: 3,  pos: { left: "27%", bottom: "26%" }, size: 8.0 },
+  { id: "rm_book",    cat: "room", name: "ほんだな",           icon: "📚", price: 60,  unlockLv: 11, pos: { left: "3%",  bottom: "25%" }, size: 12.0 },
+  { id: "rm_tv",      cat: "room", name: "テレビ",             icon: "📺", price: 80,  unlockLv: 8,  pos: { left: "77%", bottom: "21%" }, size: 11.5 },
+  { id: "rm_sofa",    cat: "room", name: "ソファ",             icon: "🛋️", price: 100, unlockLv: 15, pos: { left: "6%",  bottom: "3%"  }, size: 15.0 },
+  { id: "rm_fish",    cat: "room", name: "すいそう",           icon: "🐠", price: 120, unlockLv: 25, pos: { left: "75%", bottom: "2%"  }, size: 10.0 },
+  { id: "rm_robot",   cat: "room", name: "ロボット",           icon: "🤖", price: 140, unlockLv: 21, pos: { left: "65%", bottom: "29%" }, size: 7.25 },
 ];
 
 const SHOP_CATS = [

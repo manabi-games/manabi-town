@@ -77,6 +77,7 @@
     <input id="input-name" type="text" maxlength="8" placeholder="なまえを いれてね">
   </div>
   <button id="btn-maker-done" class="big-btn">これで けってい！</button>
+  <button id="btn-maker-cancel" class="small-btn hidden">← やめる（かえない）</button>
 </div>
 
 <!-- ======== まち（メイン画面） ======== -->
@@ -117,6 +118,7 @@
     <div class="room-floor"></div>
     <div class="room-window">🌤️</div>
     <div id="room-items" class="room-items"></div>
+    <div id="home-pet" class="home-pet hidden" title="ペットに はなしかける"></div>
     <div id="home-avatar" class="home-avatar" title="タップしてみてね"></div>
     <div id="home-bubble" class="speech-bubble hidden"></div>
   </div>
@@ -130,7 +132,10 @@
     <span class="status-title">👕 きせかえ</span>
   </div>
   <div class="closet-wrap">
-    <div class="closet-preview"><div id="closet-avatar"></div></div>
+    <div class="closet-side">
+      <div class="closet-preview"><div id="closet-avatar"></div></div>
+      <button id="btn-edit-look" class="action-btn edit-look-btn">🧑 かおや かみがたを かえる</button>
+    </div>
     <div id="closet-list" class="closet-list"></div>
   </div>
 </div>

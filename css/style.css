@@ -264,11 +264,38 @@ svg .av-leg, svg .av-arm { transform-box: fill-box; transform-origin: 50% 10%; }
   background: linear-gradient(180deg,#b3e5fc,#e1f5fe); border: 8px solid #fff;
   border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 2.2rem;
 }
-.home-avatar { position: absolute; left: 50%; bottom: 6%; transform: translateX(-50%); cursor: pointer; }
-.home-avatar svg { width: 150px; height: auto; filter: drop-shadow(0 6px 4px rgba(0,0,0,.15)); }
+/* へやの はばに あわせて おおきさが かわる（スマホでも おなじ みため） */
+.home-avatar { position: absolute; left: 50%; bottom: 6%; transform: translateX(-50%); cursor: pointer; width: 23.4%; }
+.home-avatar svg { width: 100%; height: auto; display: block; filter: drop-shadow(0 6px 4px rgba(0,0,0,.15)); }
 .home-avatar:active svg { transform: scale(.96); }
 .room-items { position: absolute; inset: 0; pointer-events: none; }
-.room-item { position: absolute; font-size: 3rem; }
+.room-item {
+  position: absolute; font-size: 3rem; line-height: 1;
+  filter: drop-shadow(0 4px 3px rgba(0,0,0,.22));
+}
+
+/* つれてきた ペット（じぶんのいえ） */
+.home-pet {
+  position: absolute; left: 62%; bottom: 3%; z-index: 99;
+  cursor: pointer; text-align: center;
+}
+/* どの ペットでも おなじ おおきさの わくに おさめる（おおきさは JSで へやの はばに あわせる） */
+.home-pet img {
+  object-fit: contain; display: block;
+  filter: drop-shadow(0 5px 4px rgba(0,0,0,.25));
+}
+.home-pet .pet-emoji { font-size: 3.4rem; display: block; }
+.home-pet .npc-name {
+  font-size: .75rem; background: rgba(255,255,255,.9); border-radius: 999px;
+  padding: 1px 9px; display: inline-block; margin-top: 2px;
+  white-space: nowrap; /* なまえが ながくても たてに のびない */
+}
+@keyframes pet-hop-solo { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-18px); } }
+.home-pet.pet-hop { animation: pet-hop-solo .42s ease-in-out 2; }
+
+/* きせかえ画面の みためチェンジ */
+.closet-side { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.edit-look-btn { font-size: .95rem; padding: 10px 16px; }
 
 .speech-bubble {
   position: absolute; left: 50%; top: 14%; transform: translateX(-50%);
@@ -452,8 +479,8 @@ svg .av-leg, svg .av-arm { transform-box: fill-box; transform-origin: 50% 10%; }
   background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
   padding: 12px; width: 210px; height: fit-content;
   display: flex; align-items: center; justify-content: center;
-  position: sticky; top: 60px;
 }
+.closet-side { position: sticky; top: 60px; height: fit-content; }
 .closet-preview svg { width: 170px; height: auto; }
 .closet-list { flex: 1; min-width: 280px; max-width: 460px; padding-bottom: 20px; }
 .closet-cat-title { margin: 10px 0 6px; font-size: 1.05rem; color: #8d6e63; }
